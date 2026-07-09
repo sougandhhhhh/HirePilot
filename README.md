@@ -1,6 +1,6 @@
 # HirePilot AI
 
-**Intelligent AI-powered Job Application Assistant** built with Streamlit and IBM watsonx Orchestrate.
+**Intelligent AI-powered Job Application Assistant** built with IBM Bob and IBM watsonx Orchestrate.
 
 ---
 
@@ -95,7 +95,7 @@ Set `USE_MOCK_DATA=False` in `.env` to switch from demo data to live agents.
 
 ## Tech Stack
 
-- **Frontend**: Streamlit + IBM Carbon Design System (CSS)
+- **Frontend**: IBM Bob + IBM Carbon Design System (CSS)
 - **AI Backend**: IBM watsonx Orchestrate + watsonx.ai (Granite / Llama 3)
 - **PDF Parsing**: PyMuPDF, pdfminer.six, python-docx
 - **PDF Generation**: fpdf2
