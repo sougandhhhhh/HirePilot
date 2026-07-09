@@ -1,25 +1,5 @@
-# HirePilot AI – Python Dependencies
-# Install: pip install -r requirements.txt
+# Python dependencies for Vercel serverless API functions
+# These are installed automatically by Vercel for api/*.py functions
 
-# ── Core Streamlit ───────────────────────────────────
-streamlit>=1.32.0
-
-# ── IBM watsonx SDK ──────────────────────────────────
-ibm-watsonx-ai>=0.2.6
-
-# ── HTTP Client ──────────────────────────────────────
+# HTTP
 requests>=2.31.0
-
-# ── Resume Parsing ───────────────────────────────────
-pymupdf>=1.23.0          # PDF text extraction (fitz)
-python-docx>=1.1.0       # DOCX parsing
-pdfminer.six>=20221105   # PDF fallback parser
-
-# ── PDF Generation ───────────────────────────────────
-fpdf2>=2.7.9             # Cover letter PDF download
-
-# ── Data Handling ────────────────────────────────────
-pandas>=2.0.0
-
-# ── Environment Config ───────────────────────────────
-python-dotenv>=1.0.0
