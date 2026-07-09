@@ -20,7 +20,7 @@ import streamlit as st
 from utils.config import APP_TITLE, APP_SUBTITLE
 from utils.styling import inject_css
 from utils.helpers import init_session_state
-from components.ui_components import render_sidebar
+from components.ui_components import render_sidebar, render_chat_bubble
 
 # ── Page imports ───────────────────────────────────────────────
 import pages.dashboard       as page_dashboard
@@ -31,6 +31,7 @@ import pages.cover_letter    as page_cover
 import pages.interview_coach as page_interview
 import pages.app_tracker     as page_tracker
 import pages.career_advisor  as page_career
+import pages.ai_assistant    as page_ai_assistant
 
 
 # ──────────────────────────────────────────────────────────────
@@ -71,6 +72,7 @@ PAGE_MAP = {
     "interview_coach": page_interview.render,
     "app_tracker":     page_tracker.render,
     "career_advisor":  page_career.render,
+    "ai_assistant":    page_ai_assistant.render,
 }
 
 render_fn = PAGE_MAP.get(current_page)
@@ -80,3 +82,11 @@ if render_fn:
 else:
     st.error(f"Page '{current_page}' not found.")
     page_dashboard.render()
+
+# ──────────────────────────────────────────────────────────────
+# Persistent floating chat bubble (rendered on every page)
+# The bubble is skipped on the AI Assistant page itself to avoid
+# a nested agent within an agent.
+# ──────────────────────────────────────────────────────────────
+if current_page != "ai_assistant":
+    render_chat_bubble()

@@ -6,6 +6,7 @@ Reusable Streamlit / HTML component fragments.
 from __future__ import annotations
 
 import streamlit as st
+import streamlit.components.v1 as components
 
 from utils.helpers import metric_card_html, progress_html, pill_html, score_colour
 
@@ -199,6 +200,27 @@ def render_sidebar() -> str:
             unsafe_allow_html=True,
         )
 
+        st.markdown('<hr style="border-color:#393939;margin:0.75rem 0;">', unsafe_allow_html=True)
+
+        # ── AI Assistant quick-launch button in sidebar ────
+        st.markdown(
+            """
+            <div style="padding:0 0 0.25rem;">
+                <div style="font-size:0.68rem;color:#8d8d8d;text-transform:uppercase;
+                            letter-spacing:0.5px;margin-bottom:0.5rem;">AI Assistant</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        if st.button(
+            "🤖  Open AI Chat",
+            use_container_width=True,
+            key="sidebar_open_chat",
+            help="Chat with your IBM watsonx Orchestrate career agent",
+        ):
+            st.session_state["current_page"] = "ai_assistant"
+            st.rerun()
+
     return selected_id
 
 
@@ -299,3 +321,246 @@ def render_footer() -> None:
         """,
         unsafe_allow_html=True,
     )
+
+
+# ──────────────────────────────────────────────────────────────
+# Persistent Floating Chat Bubble
+# ──────────────────────────────────────────────────────────────
+
+def render_chat_bubble() -> None:
+    """
+    Inject a floating chat bubble into every page.
+
+    The bubble is rendered via st.components.v1.html() inside a zero-height
+    wrapper so it overlays the page without consuming layout space.
+    It opens an <iframe> that loads the IBM watsonx Orchestrate embedded agent
+    as a slide-up panel when clicked.
+
+    st.components.v1.html() is used because Streamlit strips <script> tags
+    from st.markdown(unsafe_allow_html=True).
+    """
+    from utils.config import WATSONX_ORCHESTRATE_CONFIG as cfg
+
+    host       = cfg["hostURL"].rstrip("/")
+    orch_id    = cfg["orchestrationID"]
+    platform   = cfg["deploymentPlatform"]
+    crn        = cfg["crn"]
+    agent_id   = cfg["agentId"]
+    env_id     = cfg["agentEnvironmentId"]
+
+    bubble_html = f"""<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  * {{ box-sizing: border-box; margin: 0; padding: 0; }}
+  body {{ background: transparent; overflow: hidden; }}
+
+  /* ── Floating bubble button ── */
+  #chat-bubble {{
+    position: fixed;
+    bottom: 28px;
+    right: 28px;
+    width:  56px;
+    height: 56px;
+    border-radius: 50%;
+    background: #0f62fe;
+    color: #fff;
+    font-size: 1.5rem;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(15,98,254,.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    transition: background .15s, transform .15s;
+  }}
+  #chat-bubble:hover  {{ background: #0353e9; transform: scale(1.07); }}
+  #chat-bubble:active {{ background: #002d9c; transform: scale(0.96); }}
+
+  /* ── Slide-up chat panel ── */
+  #chat-panel {{
+    position: fixed;
+    bottom: 96px;
+    right:  28px;
+    width:  400px;
+    height: 600px;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0,0,0,.22);
+    z-index: 9998;
+    display: none;
+    flex-direction: column;
+    background: #fff;
+    transform: translateY(20px);
+    opacity: 0;
+    transition: transform .25s ease, opacity .25s ease;
+  }}
+  #chat-panel.open {{
+    display: flex;
+    transform: translateY(0);
+    opacity: 1;
+  }}
+
+  /* ── Panel header ── */
+  #panel-header {{
+    background: linear-gradient(135deg, #0f62fe 0%, #001d6c 100%);
+    color: #fff;
+    padding: .75rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }}
+  #panel-header .title {{
+    font-size: .9rem;
+    font-weight: 600;
+    font-family: 'IBM Plex Sans', sans-serif;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+  }}
+  #close-btn {{
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-size: 1.1rem;
+    cursor: pointer;
+    opacity: .8;
+    line-height: 1;
+    padding: 0 .25rem;
+  }}
+  #close-btn:hover {{ opacity: 1; }}
+
+  /* ── Agent container fills the panel ── */
+  #root {{
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+  }}
+  #root iframe,
+  #root > div {{
+    width:  100% !important;
+    height: 100% !important;
+    border: none !important;
+  }}
+
+  /* ── Loading ── */
+  #panel-loading {{
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    background: #f4f4f4; gap: .75rem;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: .82rem; color: #6f6f6f;
+  }}
+  .spinner {{
+    width: 32px; height: 32px;
+    border: 3px solid #d0e2ff;
+    border-top-color: #0f62fe;
+    border-radius: 50%;
+    animation: spin .8s linear infinite;
+  }}
+  @keyframes spin {{ to {{ transform: rotate(360deg); }} }}
+</style>
+</head>
+<body>
+
+  <!-- Floating bubble -->
+  <button id="chat-bubble" title="Open AI Assistant" aria-label="Open AI Assistant">
+    🤖
+  </button>
+
+  <!-- Slide-up chat panel -->
+  <div id="chat-panel">
+    <div id="panel-header">
+      <div class="title">✈️ HirePilot AI Assistant</div>
+      <button id="close-btn" title="Close">✕</button>
+    </div>
+    <div id="root">
+      <div id="panel-loading">
+        <div class="spinner"></div>
+        <span>Connecting to watsonx…</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    var panelOpen   = false;
+    var agentLoaded = false;
+
+    var bubble = document.getElementById('chat-bubble');
+    var panel  = document.getElementById('chat-panel');
+    var closeBtn = document.getElementById('close-btn');
+    var loading  = document.getElementById('panel-loading');
+
+    function openPanel() {{
+      panel.style.display = 'flex';
+      // Allow display to apply before adding .open for CSS transition
+      requestAnimationFrame(function () {{
+        requestAnimationFrame(function () {{ panel.classList.add('open'); }});
+      }});
+      bubble.textContent = '✕';
+      panelOpen = true;
+
+      if (!agentLoaded) {{ loadAgent(); }}
+    }}
+
+    function closePanel() {{
+      panel.classList.remove('open');
+      setTimeout(function () {{ panel.style.display = 'none'; }}, 260);
+      bubble.textContent = '🤖';
+      panelOpen = false;
+    }}
+
+    bubble.addEventListener('click', function () {{
+      if (panelOpen) {{ closePanel(); }} else {{ openPanel(); }}
+    }});
+    closeBtn.addEventListener('click', closePanel);
+
+    function loadAgent() {{
+      window.wxOConfiguration = {{
+        orchestrationID:    "{orch_id}",
+        hostURL:            "{host}",
+        rootElementID:      "root",
+        deploymentPlatform: "{platform}",
+        crn:                "{crn}",
+        chatOptions: {{
+          agentId:            "{agent_id}",
+          agentEnvironmentId: "{env_id}"
+        }}
+      }};
+
+      var script = document.createElement('script');
+      script.src = "{host}/wxochat/wxoLoader.js?embed=true";
+
+      script.addEventListener('load', function () {{
+        wxoLoader.init();
+        agentLoaded = true;
+        if (loading) {{
+          loading.style.opacity = '0';
+          setTimeout(function () {{ loading.remove(); }}, 300);
+        }}
+      }});
+
+      script.addEventListener('error', function () {{
+        if (loading) {{
+          loading.innerHTML =
+            '<div style="text-align:center;padding:1.5rem;color:#6f6f6f;">' +
+            '<div style="font-size:1.5rem;margin-bottom:.5rem;">⚠️</div>' +
+            '<div style="font-weight:600;color:#161616;font-size:.82rem;">Could not load agent</div>' +
+            '<div style="font-size:.75rem;margin-top:.3rem;">Check network / credentials</div>' +
+            '</div>';
+        }}
+      }});
+
+      document.head.appendChild(script);
+    }}
+  </script>
+</body>
+</html>"""
+
+    # Render inside a zero-height wrapper — the fixed positioning means
+    # the bubble floats above the page content without consuming vertical space.
+    components.html(bubble_html, height=0, scrolling=False)

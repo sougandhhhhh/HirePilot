@@ -62,7 +62,21 @@ NAV_PAGES = [
     {"id": "interview_coach",  "label": "🎤  Interview Coach",      "icon": "🎤"},
     {"id": "app_tracker",      "label": "📋  Application Tracker",  "icon": "📋"},
     {"id": "career_advisor",   "label": "🚀  AI Career Advisor",    "icon": "🚀"},
+    {"id": "ai_assistant",     "label": "🤖  AI Assistant",         "icon": "🤖"},
 ]
+
+# ──────────────────────────────────────────────
+# IBM watsonx Orchestrate Embedded Agent
+# ──────────────────────────────────────────────
+WATSONX_ORCHESTRATE_CONFIG = {
+    "orchestrationID":  "8254d45b2e8c49f397fed4f4efda4474_82de1835-3f80-482d-864e-7b0c75121f2f",
+    "hostURL":          "https://au-syd.watson-orchestrate.cloud.ibm.com",
+    "rootElementID":    "root",
+    "deploymentPlatform": "ibmcloud",
+    "crn":              "crn:v1:bluemix:public:watsonx-orchestrate:au-syd:a/8254d45b2e8c49f397fed4f4efda4474:82de1835-3f80-482d-864e-7b0c75121f2f::",
+    "agentId":          "066f1a0a-dec9-4dc8-8462-23b617d50639",
+    "agentEnvironmentId": "6b0c667f-8cb8-43d0-bc81-098baaf81a36",
+}
 
 # ──────────────────────────────────────────────
 # Demo / Mock Data Toggle
