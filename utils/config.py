@@ -1,17 +1,40 @@
 """
 HirePilot AI – Configuration & Constants
 IBM watsonx Orchestrate API settings and app-wide constants.
+
+Secret resolution order (first match wins):
+  1. st.secrets  – Streamlit Community Cloud / local .streamlit/secrets.toml
+  2. os.environ  – Railway, Render, Heroku, Docker env vars
+  3. Hard-coded default (empty string / fallback)
 """
 
 import os
 
+
+def _secret(key: str, default: str = "") -> str:
+    """
+    Resolve a config value from Streamlit secrets first,
+    then environment variables, then a hard-coded default.
+    This makes the app work identically on Streamlit Community Cloud,
+    Railway, Render, Heroku, Docker, and local dev.
+    """
+    try:
+        import streamlit as st
+        val = st.secrets.get(key)
+        if val is not None:
+            return str(val)
+    except Exception:
+        pass
+    return os.getenv(key, default)
+
+
 # ──────────────────────────────────────────────
 # IBM watsonx Orchestrate API Configuration
 # ──────────────────────────────────────────────
-WATSONX_API_URL = os.getenv("WATSONX_API_URL", "https://us-south.ml.cloud.ibm.com")
-WATSONX_API_KEY = os.getenv("WATSONX_API_KEY", "")
-WATSONX_PROJECT_ID = os.getenv("WATSONX_PROJECT_ID", "")
-WATSONX_SPACE_ID = os.getenv("WATSONX_SPACE_ID", "")
+WATSONX_API_URL    = _secret("WATSONX_API_URL",    "https://us-south.ml.cloud.ibm.com")
+WATSONX_API_KEY    = _secret("WATSONX_API_KEY",    "")
+WATSONX_PROJECT_ID = _secret("WATSONX_PROJECT_ID", "")
+WATSONX_SPACE_ID   = _secret("WATSONX_SPACE_ID",   "")
 
 # IBM watsonx.ai model IDs
 MODEL_GRANITE = "ibm/granite-13b-instruct-v2"
@@ -81,5 +104,6 @@ WATSONX_ORCHESTRATE_CONFIG = {
 # ──────────────────────────────────────────────
 # Demo / Mock Data Toggle
 # ──────────────────────────────────────────────
-USE_MOCK_DATA = True   # Set False when live watsonx credentials are configured
+# Reads from secrets/env so it can be toggled per environment without code changes.
+USE_MOCK_DATA   = _secret("USE_MOCK_DATA", "true").lower() not in ("false", "0", "no")
 REQUEST_TIMEOUT = 30   # seconds
