@@ -1,4 +1,4 @@
-// HirePilot AI – Job Matcher page
+// HirePilot AI – Premium Job Matcher
 import { useState } from 'react';
 import Layout from '../components/Layout';
 import { SectionHeader, Pill, Loading, scoreColour } from '../components/UI';
@@ -22,17 +22,52 @@ const SKILLS_LIST = [
   'Machine Learning','GraphQL','CI/CD','System Design',
 ];
 
+const COMPANY_LOGOS = {
+  Stripe: '💳', Cloudflare: '🌐', Databricks: '🔥', Figma: '🎨', Notion: '📝',
+};
+
 function buildMockJobs(role, loc) {
   return {
     total_found: 47,
     jobs: [
-      { title:`Senior ${role}`, company:'Stripe',     location:loc,          salary:'$145,000–$185,000', match_pct:94, posted:'2 days ago',  skills:['Python','React','PostgreSQL','AWS'],            url:'https://stripe.com/jobs',               description:'Lead development of payment infrastructure serving millions of users.' },
-      { title:role,              company:'Cloudflare', location:'Remote',      salary:'$130,000–$165,000', match_pct:89, posted:'1 day ago',   skills:['Go','Rust','Kubernetes','Distributed Systems'], url:'https://cloudflare.com/careers',         description:'Build and scale edge computing solutions at a global scale.' },
-      { title:`${role} II`,      company:'Databricks', location:loc,          salary:'$140,000–$175,000', match_pct:86, posted:'3 days ago',  skills:['Python','Spark','Scala','Delta Lake'],           url:'https://databricks.com/company/careers', description:'Work on data lakehouse products used by Fortune 500 companies.' },
-      { title:`Staff ${role}`,   company:'Figma',      location:'New York, NY',salary:'$155,000–$200,000', match_pct:81, posted:'5 days ago',  skills:['TypeScript','WebGL','React','Performance'],      url:'https://figma.com/careers',              description:"Improve Figma's collaborative design editor performance." },
-      { title:`Principal ${role}`,company:'Notion',    location:'Remote',      salary:'$160,000–$210,000', match_pct:77, posted:'1 week ago',  skills:['React','Node.js','CRDTs','System Design'],       url:'https://notion.so/careers',              description:'Architect next-generation collaborative document infrastructure.' },
+      { title:`Senior ${role}`, company:'Stripe',     location:loc,          salary:'$145,000–$185,000', match_pct:94, posted:'2 days ago',  skills:['Python','React','PostgreSQL','AWS'],            url:'https://stripe.com/jobs',               description:'Lead development of payment infrastructure serving millions of users.', remote: true },
+      { title:role,              company:'Cloudflare', location:'Remote',      salary:'$130,000–$165,000', match_pct:89, posted:'1 day ago',   skills:['Go','Rust','Kubernetes','Distributed Systems'], url:'https://cloudflare.com/careers',         description:'Build and scale edge computing solutions at a global scale.', remote: true },
+      { title:`${role} II`,      company:'Databricks', location:loc,          salary:'$140,000–$175,000', match_pct:86, posted:'3 days ago',  skills:['Python','Spark','Scala','Delta Lake'],           url:'https://databricks.com/company/careers', description:'Work on data lakehouse products used by Fortune 500 companies.', remote: false },
+      { title:`Staff ${role}`,   company:'Figma',      location:'New York, NY',salary:'$155,000–$200,000', match_pct:81, posted:'5 days ago',  skills:['TypeScript','WebGL','React','Performance'],      url:'https://figma.com/careers',              description:"Improve Figma's collaborative design editor performance.", remote: false },
+      { title:`Principal ${role}`,company:'Notion',   location:'Remote',      salary:'$160,000–$210,000', match_pct:77, posted:'1 week ago',  skills:['React','Node.js','CRDTs','System Design'],       url:'https://notion.so/careers',              description:'Architect next-generation collaborative document infrastructure.', remote: true },
     ],
   };
+}
+
+// Match percentage ring
+function MatchRing({ pct }) {
+  const r = 22;
+  const circ = 2 * Math.PI * r;
+  const offset = circ * (1 - pct / 100);
+  const c = scoreColour(pct);
+  return (
+    <div style={{ position: 'relative', width: 58, height: 58, flexShrink: 0 }}>
+      <svg width="58" height="58" viewBox="0 0 58 58">
+        <circle cx="29" cy="29" r={r} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="5" />
+        <circle
+          cx="29" cy="29" r={r} fill="none"
+          stroke={c} strokeWidth="5"
+          strokeDasharray={circ.toFixed(1)}
+          strokeDashoffset={offset.toFixed(1)}
+          strokeLinecap="round"
+          transform="rotate(-90 29 29)"
+          style={{ filter: `drop-shadow(0 0 4px ${c})` }}
+        />
+      </svg>
+      <div style={{
+        position: 'absolute', inset: 0,
+        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+      }}>
+        <div style={{ fontSize: '.82rem', fontWeight: 700, color: c, lineHeight: 1 }}>{pct}%</div>
+        <div style={{ fontSize: '.55rem', color: 'var(--text-muted)' }}>match</div>
+      </div>
+    </div>
+  );
 }
 
 export default function JobMatcher() {
@@ -62,52 +97,69 @@ export default function JobMatcher() {
     }
   }
 
-  const toggleSkill = s => setSkills(prev => prev.includes(s) ? prev.filter(x=>x!==s) : [...prev,s]);
+  const toggleSkill = s => setSkills(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s]);
   const jobs = (result?.jobs || []).filter(j => j.match_pct >= minMatch);
 
   return (
-    <Layout title="Job Matcher">
+    <Layout>
       <SectionHeader icon="🔍" title="Job Matcher" />
-      <p style={{ color:'#6f6f6f', marginBottom:'1.5rem', fontSize:'.9rem' }}>
-        Tell the AI your preferences and discover top-matched opportunities with salary insights.
+      <p style={{ color: 'var(--text-muted)', marginBottom: '1.75rem', fontSize: '.92rem', maxWidth: 560 }}>
+        Describe your ideal role and let IBM watsonx AI surface the highest-match opportunities with salary insights.
       </p>
 
-      <div className="card" style={{ marginBottom:'1.5rem' }}>
-        <div className="col-2">
+      {/* ── Filter Card ──────────────────────────────── */}
+      <div className="card" style={{ marginBottom: '1.5rem' }}>
+        <div className="col-2" style={{ marginBottom: '1rem' }}>
           <div>
             <div className="form-group">
               <label>🎯 Target Role</label>
-              <select className="form-control" value={role} onChange={e=>setRole(e.target.value)}>
-                {ROLES.map(r=><option key={r}>{r}</option>)}
+              <select className="form-control" value={role} onChange={e => setRole(e.target.value)}>
+                {ROLES.map(r => <option key={r}>{r}</option>)}
               </select>
             </div>
-            <div className="form-group">
+            <div className="form-group" style={{ marginBottom: 0 }}>
               <label>📍 Preferred Location</label>
-              <select className="form-control" value={loc} onChange={e=>setLoc(e.target.value)}>
-                {LOCATIONS.map(l=><option key={l}>{l}</option>)}
+              <select className="form-control" value={loc} onChange={e => setLoc(e.target.value)}>
+                {LOCATIONS.map(l => <option key={l}>{l}</option>)}
               </select>
             </div>
           </div>
           <div>
             <div className="form-group">
               <label>📅 Experience Level</label>
-              <select className="form-control" value={exp} onChange={e=>setExp(e.target.value)}>
-                {EXPERIENCE.map(e=><option key={e}>{e}</option>)}
+              <select className="form-control" value={exp} onChange={e => setExp(e.target.value)}>
+                {EXPERIENCE.map(e => <option key={e}>{e}</option>)}
               </select>
             </div>
-            <div className="form-group">
+            <div className="form-group" style={{ marginBottom: 0 }}>
               <label>🛠️ Skills (click to toggle)</label>
-              <div style={{ display:'flex', flexWrap:'wrap', gap:'.3rem', padding:'.5rem 0' }}>
-                {SKILLS_LIST.map(s=>(
-                  <span key={s} className={`pill pill-${skills.includes(s)?'blue':'gray'}`}
-                    style={{ cursor:'pointer' }} onClick={()=>toggleSkill(s)}>{s}</span>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.3rem', padding: '.4rem 0' }}>
+                {SKILLS_LIST.map(s => (
+                  <span
+                    key={s}
+                    className={`pill pill-${skills.includes(s) ? 'blue' : 'gray'}`}
+                    style={{ cursor: 'pointer', transition: 'all .15s' }}
+                    onClick={() => toggleSkill(s)}
+                  >{s}</span>
                 ))}
               </div>
             </div>
           </div>
         </div>
-        <button className="btn" onClick={search} disabled={loading}>
-          {loading ? '⏳ Searching…' : '🔍 Find Matching Jobs'}
+        <button className="btn" onClick={search} disabled={loading} style={{ borderRadius: 12 }}>
+          {loading ? (
+            <>
+              <span style={{ display: 'inline-block', width: 14, height: 14, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin .6s linear infinite' }} />
+              Searching…
+            </>
+          ) : (
+            <>
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor">
+                <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+              </svg>
+              Find Matching Jobs
+            </>
+          )}
         </button>
       </div>
 
@@ -115,62 +167,128 @@ export default function JobMatcher() {
 
       {result && (
         <>
-          <div className="info-box">
-            🎯 Found <strong>{result.total_found}</strong> jobs for <strong>{role}</strong> in <strong>{loc}</strong>. Showing {jobs.length} results.
+          <div className="info-box" style={{ marginBottom: '1rem' }}>
+            🎯 Found <strong>{result.total_found}</strong> jobs for <strong>{role}</strong> in <strong>{loc}</strong>.
+            Showing <strong>{jobs.length}</strong> results.
           </div>
 
-          <div style={{ display:'flex', alignItems:'center', gap:'1rem', margin:'1rem 0', flexWrap:'wrap' }}>
-            <label style={{ fontSize:'.82rem', fontWeight:500 }}>Min match %:</label>
-            <input type="range" min="0" max="100" value={minMatch}
-              onChange={e=>setMinMatch(+e.target.value)} style={{ width:140 }} />
-            <span style={{ fontWeight:600, color:'#0f62fe' }}>{minMatch}%</span>
+          {/* Match filter */}
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: '1rem',
+            margin: '0 0 1.5rem', flexWrap: 'wrap',
+            padding: '.85rem 1.1rem',
+            background: 'rgba(255,255,255,0.02)',
+            border: '1px solid var(--glass-border)',
+            borderRadius: 12,
+          }}>
+            <label style={{ fontSize: '.82rem', fontWeight: 500, color: 'var(--text-secondary)' }}>
+              Min match:
+            </label>
+            <input
+              type="range" min="0" max="100" value={minMatch}
+              onChange={e => setMinMatch(+e.target.value)}
+              style={{ flex: 1, maxWidth: 200, accentColor: 'var(--ibm-blue)' }}
+            />
+            <span style={{
+              fontWeight: 700, color: scoreColour(minMatch),
+              minWidth: 40, fontSize: '.9rem',
+            }}>{minMatch}%</span>
           </div>
 
           {jobs.length === 0 && (
-            <div className="info-box">No jobs match the current filter. Try lowering the minimum match %.</div>
+            <div className="info-box">No jobs match this filter. Try lowering the minimum match %.</div>
           )}
 
-          {jobs.map((job, i) => {
-            const key = `${job.company}_${job.title}`;
-            const c = scoreColour(job.match_pct);
-            return (
-              <div key={i} className="job-card">
-                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start' }}>
-                  <div>
-                    <h4>{job.title}</h4>
-                    <div className="job-meta">
-                      🏢 {job.company} &nbsp;|&nbsp; 📍 {job.location}
-                      &nbsp;|&nbsp; 💰 {job.salary} &nbsp;|&nbsp; 🕐 {job.posted}
+          {/* Job cards */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            {jobs.map((job, i) => {
+              const key = `${job.company}_${job.title}`;
+              const c = scoreColour(job.match_pct);
+              return (
+                <div key={i} className="job-card" style={{ animationDelay: `${i * 60}ms` }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem' }}>
+                    {/* Left info */}
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem', marginBottom: '.4rem' }}>
+                        {/* Company logo placeholder */}
+                        <div style={{
+                          width: 40, height: 40, borderRadius: 10,
+                          background: 'rgba(255,255,255,0.06)',
+                          border: '1px solid var(--glass-border)',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontSize: '1.2rem', flexShrink: 0,
+                        }}>
+                          {COMPANY_LOGOS[job.company] || '🏢'}
+                        </div>
+                        <div>
+                          <h4 style={{ margin: 0, color: 'var(--text-primary)' }}>{job.title}</h4>
+                          <div style={{ fontSize: '.78rem', color: 'var(--text-muted)' }}>
+                            {job.company} · {job.location}
+                          </div>
+                        </div>
+                      </div>
+
+                      <p style={{ fontSize: '.82rem', color: 'var(--text-muted)', margin: '0 0 .85rem', lineHeight: 1.55 }}>
+                        {job.description}
+                      </p>
+
+                      {/* Meta row */}
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.5rem', marginBottom: '.85rem', alignItems: 'center' }}>
+                        <span style={{ fontSize: '.75rem', color: 'var(--green)', fontWeight: 600 }}>
+                          💰 {job.salary}
+                        </span>
+                        <span style={{ color: 'var(--glass-border)' }}>·</span>
+                        <span style={{ fontSize: '.75rem', color: 'var(--text-muted)' }}>🕐 {job.posted}</span>
+                        {job.remote && (
+                          <span className="pill pill-cyan" style={{ fontSize: '.65rem' }}>Remote</span>
+                        )}
+                      </div>
+
+                      {/* Match bar */}
+                      <div style={{ background: 'rgba(255,255,255,0.06)', borderRadius: 999, height: 4, overflow: 'hidden', marginBottom: '.85rem' }}>
+                        <div style={{ height: 4, borderRadius: 999, background: `linear-gradient(90deg, ${c}80, ${c})`, width: `${job.match_pct}%`, transition: 'width .8s ease' }} />
+                      </div>
+
+                      {/* Skills */}
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.3rem', marginBottom: '.85rem' }}>
+                        {(job.skills || []).map(s => <Pill key={s} text={s} style="blue" />)}
+                      </div>
+
+                      {/* Actions */}
+                      <div style={{ display: 'flex', gap: '.65rem' }}>
+                        <button
+                          className={`btn btn-sm${added[key] ? ' btn-success' : ''}`}
+                          style={{ borderRadius: 8 }}
+                          onClick={() => setAdded(p => ({ ...p, [key]: true }))}
+                        >
+                          {added[key] ? '✓ Added to Tracker' : 'Quick Apply'}
+                        </button>
+                        <a
+                          href={job.url} target="_blank" rel="noreferrer"
+                          className="btn btn-secondary btn-sm"
+                          style={{ borderRadius: 8 }}
+                        >
+                          View Job
+                        </a>
+                        <button className="btn btn-ghost btn-sm" style={{ borderRadius: 8 }}>
+                          Save
+                        </button>
+                      </div>
                     </div>
+
+                    {/* Match ring */}
+                    <MatchRing pct={job.match_pct} />
                   </div>
-                  <div style={{ textAlign:'right', minWidth:70 }}>
-                    <div style={{ fontSize:'1.5rem', fontWeight:700, color:c }}>{job.match_pct}%</div>
-                    <div style={{ fontSize:'.7rem', color:'#6f6f6f' }}>match</div>
-                  </div>
                 </div>
-                <p style={{ fontSize:'.82rem', color:'#6f6f6f', margin:'0 0 .75rem' }}>{job.description}</p>
-                <div style={{ height:6, background:'#e5e7eb', borderRadius:2, overflow:'hidden', marginBottom:'.75rem' }}>
-                  <div style={{ height:6, borderRadius:2, background:c, width:`${job.match_pct}%` }} />
-                </div>
-                <div style={{ marginBottom:'.75rem' }}>
-                  {(job.skills||[]).map(s=><Pill key={s} text={s} style="blue" />)}
-                </div>
-                <div style={{ display:'flex', gap:'.75rem' }}>
-                  <button className={`btn btn-sm${added[key]?' btn-secondary':''}`}
-                    onClick={()=>setAdded(p=>({...p,[key]:true}))}>
-                    {added[key] ? '✅ Added to Tracker' : '✅ Apply Now'}
-                  </button>
-                  <a href={job.url} target="_blank" rel="noreferrer" className="btn btn-secondary btn-sm">🔗 View Job</a>
-                </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </>
       )}
 
       {!loading && !result && (
         <div className="info-box">
-          ℹ️ Select your preferences above and click &apos;Find Matching Jobs&apos; to discover AI-curated opportunities.
+          ℹ️ Configure your preferences above and click <strong>Find Matching Jobs</strong> to discover AI-curated opportunities.
         </div>
       )}
     </Layout>

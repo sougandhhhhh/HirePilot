@@ -1,62 +1,62 @@
-// HirePilot AI – AI Career Advisor page
+// HirePilot AI – Premium AI Career Advisor
 import { useState } from 'react';
 import Layout from '../components/Layout';
 import { SectionHeader, ProgressBar, Pill, Loading, InfoBox, scoreColour } from '../components/UI';
 
 const TABS = [
-  { id:'roadmap',   label:'🗺️ Career Roadmap' },
-  { id:'salary',    label:'💰 Salary Forecast' },
-  { id:'companies', label:'🏢 Top Companies' },
-  { id:'skills',    label:'🔮 Future Skills' },
-  { id:'certs',     label:'📜 Certifications' },
+  { id: 'roadmap',   label: '🗺️ Career Roadmap' },
+  { id: 'salary',    label: '💰 Salary Forecast' },
+  { id: 'companies', label: '🏢 Top Companies' },
+  { id: 'skills',    label: '🔮 Future Skills' },
+  { id: 'certs',     label: '📜 Certifications' },
 ];
 
 const MOCK = {
-  career_roadmap:[
-    {year:'Now',    title:'Mid-level Engineer',   focus:'Deepen full-stack expertise, contribute to system design decisions'},
-    {year:'Year 1', title:'Senior Engineer',      focus:'Lead features end-to-end, mentor 1-2 juniors, own a service'},
-    {year:'Year 2', title:'Staff / Tech Lead',    focus:'Define technical direction, cross-team influence, org-wide impact'},
-    {year:'Year 4', title:'Principal / Architect',focus:'Enterprise architecture, strategic planning, hiring bar-raiser'},
+  career_roadmap: [
+    { year: 'Now',    title: 'Mid-level Engineer',    focus: 'Deepen full-stack expertise, contribute to system design decisions' },
+    { year: 'Year 1', title: 'Senior Engineer',       focus: 'Lead features end-to-end, mentor 1-2 juniors, own a service' },
+    { year: 'Year 2', title: 'Staff / Tech Lead',     focus: 'Define technical direction, cross-team influence, org-wide impact' },
+    { year: 'Year 4', title: 'Principal / Architect', focus: 'Enterprise architecture, strategic planning, hiring bar-raiser' },
   ],
-  salary_prediction:{current:'$115,000','12_months':'$135,000','24_months':'$155,000','36_months':'$180,000'},
-  top_companies:[
-    {name:'Stripe',       match:94,culture:'High-performance, craft-focused'},
-    {name:'Cloudflare',   match:89,culture:'Distributed, open, engineering-led'},
-    {name:'Databricks',   match:86,culture:'Data-driven, fast-growing'},
-    {name:'Hashicorp',    match:83,culture:'Open source first, remote-friendly'},
-    {name:'IBM Research', match:80,culture:'Innovation, enterprise scale, diversity'},
+  salary_prediction: { current: '$115,000', '12_months': '$135,000', '24_months': '$155,000', '36_months': '$180,000' },
+  top_companies: [
+    { name: 'Stripe',       match: 94, culture: 'High-performance, craft-focused' },
+    { name: 'Cloudflare',   match: 89, culture: 'Distributed, open, engineering-led' },
+    { name: 'Databricks',   match: 86, culture: 'Data-driven, fast-growing' },
+    { name: 'Hashicorp',    match: 83, culture: 'Open source first, remote-friendly' },
+    { name: 'IBM Research', match: 80, culture: 'Innovation, enterprise scale, diversity' },
   ],
-  future_skills:[
-    {skill:'AI/ML Engineering',        relevance:95,timeline:'Now'},
-    {skill:'Platform Engineering',     relevance:88,timeline:'6 months'},
-    {skill:'FinOps / Cloud Cost Mgmt', relevance:72,timeline:'1 year'},
-    {skill:'WebAssembly (WASM)',        relevance:68,timeline:'1-2 years'},
-    {skill:'Quantum Computing Basics', relevance:45,timeline:'3+ years'},
+  future_skills: [
+    { skill: 'AI/ML Engineering',        relevance: 95, timeline: 'Now' },
+    { skill: 'Platform Engineering',     relevance: 88, timeline: '6 months' },
+    { skill: 'FinOps / Cloud Cost Mgmt', relevance: 72, timeline: '1 year' },
+    { skill: 'WebAssembly (WASM)',        relevance: 68, timeline: '1-2 years' },
+    { skill: 'Quantum Computing Basics', relevance: 45, timeline: '3+ years' },
   ],
-  certifications:[
+  certifications: [
     'AWS Solutions Architect Professional',
     'Google Cloud Professional Data Engineer',
     'IBM AI Enterprise Workflow Specialisation',
     'Certified Kubernetes Administrator (CKA)',
   ],
-  market_insight:'Demand for full-stack engineers with cloud-native experience is growing at 22% YoY. Engineers with AI/ML integration skills command a 35% salary premium.',
+  market_insight: 'Demand for full-stack engineers with cloud-native experience is growing at 22% YoY. Engineers with AI/ML integration skills command a 35% salary premium.',
 };
 
 export default function Advisor() {
-  const [role, setRole]         = useState('Full Stack Developer');
-  const [exp, setExp]           = useState('3–5 years');
+  const [role, setRole]           = useState('Full Stack Developer');
+  const [exp, setExp]             = useState('3–5 years');
   const [skillsRaw, setSkillsRaw] = useState('Python, React, Node.js, SQL');
-  const [result, setResult]     = useState(null);
-  const [loading, setLoading]   = useState(false);
-  const [tab, setTab]           = useState('roadmap');
+  const [result, setResult]       = useState(null);
+  const [loading, setLoading]     = useState(false);
+  const [tab, setTab]             = useState('roadmap');
 
   async function getAdvice() {
     setLoading(true); setResult(null);
-    const skills = skillsRaw.split(',').map(s=>s.trim()).filter(Boolean);
+    const skills = skillsRaw.split(',').map(s => s.trim()).filter(Boolean);
     try {
       const r = await fetch('/api/advisor', {
-        method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({role, experience:exp, skills}),
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role, experience: exp, skills }),
       });
       if (!r.ok) throw new Error(r.status);
       setResult(await r.json());
@@ -65,118 +65,213 @@ export default function Advisor() {
   }
 
   return (
-    <Layout title="AI Career Advisor">
+    <Layout>
       <SectionHeader icon="🚀" title="AI Career Advisor" />
-      <p style={{ color:'#6f6f6f', marginBottom:'1.5rem', fontSize:'.9rem' }}>
-        Get a personalised career roadmap, salary forecast, and IBM watsonx-powered strategic insights.
+      <p style={{ color: 'var(--text-muted)', marginBottom: '1.75rem', fontSize: '.92rem', maxWidth: 560 }}>
+        Get a personalized career roadmap, salary forecast, and IBM watsonx-powered strategic insights.
       </p>
 
-      <div className="card" style={{ marginBottom:'1.5rem' }}>
+      {/* ── Config card ───────────────────────────── */}
+      <div className="card" style={{ marginBottom: '1.5rem' }}>
         <div className="col-3">
-          <div className="form-group"><label>🎯 Current Role</label>
-            <input className="form-control" value={role} onChange={e=>setRole(e.target.value)} />
+          <div className="form-group">
+            <label>🎯 Current Role</label>
+            <input className="form-control" value={role} onChange={e => setRole(e.target.value)} />
           </div>
-          <div className="form-group"><label>📅 Experience</label>
-            <select className="form-control" value={exp} onChange={e=>setExp(e.target.value)}>
-              {['< 1 year','1–2 years','3–5 years','5–8 years','8+ years'].map(e=><option key={e}>{e}</option>)}
+          <div className="form-group">
+            <label>📅 Experience</label>
+            <select className="form-control" value={exp} onChange={e => setExp(e.target.value)}>
+              {['< 1 year', '1–2 years', '3–5 years', '5–8 years', '8+ years'].map(e => <option key={e}>{e}</option>)}
             </select>
           </div>
-          <div className="form-group"><label>🛠️ Skills (comma-separated)</label>
-            <input className="form-control" value={skillsRaw} onChange={e=>setSkillsRaw(e.target.value)} />
+          <div className="form-group">
+            <label>🛠️ Skills <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>(comma-separated)</span></label>
+            <input className="form-control" value={skillsRaw} onChange={e => setSkillsRaw(e.target.value)} />
           </div>
         </div>
-        <button className="btn" onClick={getAdvice} disabled={loading}>
-          {loading ? '⏳ Analyzing…' : '🚀 Get Career Advice'}
+        <button
+          className="btn"
+          style={{ borderRadius: 12 }}
+          onClick={getAdvice}
+          disabled={loading}
+        >
+          {loading ? (
+            <>
+              <span style={{ display: 'inline-block', width: 14, height: 14, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin .6s linear infinite' }} />
+              Analyzing…
+            </>
+          ) : '🚀 Get Career Advice'}
         </button>
       </div>
 
       {loading && <Loading message="IBM watsonx AI is analysing your career trajectory…" />}
-      {!result && !loading && <InfoBox>ℹ️ Fill in your profile above and click Get Career Advice to receive a personalised career strategy.</InfoBox>}
+      {!result && !loading && (
+        <InfoBox>ℹ️ Fill in your profile above and click Get Career Advice to receive a personalised career strategy.</InfoBox>
+      )}
 
       {result && (
         <>
+          {/* Tabs */}
           <div className="tabs-bar">
-            {TABS.map(t=><button key={t.id} className={`tab-btn${tab===t.id?' active':''}`} onClick={()=>setTab(t.id)}>{t.label}</button>)}
+            {TABS.map(t => (
+              <button key={t.id} className={`tab-btn${tab === t.id ? ' active' : ''}`} onClick={() => setTab(t.id)}>
+                {t.label}
+              </button>
+            ))}
           </div>
 
-          {/* Career Roadmap */}
-          {tab==='roadmap' && (result.career_roadmap||[]).map((step,i)=>{
-            const isNow=step.year==='Now';
-            return (
-              <div key={i} style={{display:'flex',gap:'1.25rem',padding:'1rem 0',borderBottom:'1px solid #f4f4f4'}}>
-                <div style={{minWidth:70,textAlign:'center'}}>
-                  <div style={{background:isNow?'#0f62fe':'#e5e7eb',color:isNow?'#fff':'#6f6f6f',borderRadius:4,padding:'.2rem .5rem',fontSize:'.75rem',fontWeight:600}}>{step.year}</div>
-                </div>
-                <div>
-                  <div style={{fontWeight:600,fontSize:'.95rem',color:isNow?'#0f62fe':'#161616',marginBottom:'.2rem'}}>
-                    {step.title}
-                    {isNow&&<span style={{background:'#0f62fe',color:'#fff',fontSize:'.62rem',padding:'2px 6px',borderRadius:8,marginLeft:8,fontWeight:500}}>YOU ARE HERE</span>}
+          {/* ── Career Roadmap ─────────────────────── */}
+          {tab === 'roadmap' && (
+            <div className="card">
+              {(result.career_roadmap || []).map((step, i) => {
+                const isNow = step.year === 'Now';
+                return (
+                  <div key={i} style={{
+                    display: 'flex', gap: '1.25rem', padding: '1rem 0',
+                    borderBottom: i < result.career_roadmap.length - 1 ? '1px solid var(--glass-border)' : 'none',
+                    animation: `slideUp .35s ease ${i * 80}ms both`,
+                  }}>
+                    <div style={{ minWidth: 80, textAlign: 'center' }}>
+                      <div style={{
+                        background: isNow ? 'var(--ibm-blue)' : 'rgba(255,255,255,0.06)',
+                        color: isNow ? '#fff' : 'var(--text-muted)',
+                        borderRadius: 10, padding: '.3rem .6rem',
+                        fontSize: '.75rem', fontWeight: 600,
+                        display: 'inline-block',
+                      }}>{step.year}</div>
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: 600, fontSize: '.95rem', color: isNow ? 'var(--electric)' : 'var(--text-primary)', marginBottom: '.25rem', display: 'flex', alignItems: 'center', gap: '.5rem' }}>
+                        {step.title}
+                        {isNow && (
+                          <span style={{
+                            background: 'var(--ibm-blue)', color: '#fff',
+                            fontSize: '.6rem', padding: '2px 7px', borderRadius: 8, fontWeight: 500,
+                          }}>YOU ARE HERE</span>
+                        )}
+                      </div>
+                      <div style={{ fontSize: '.82rem', color: 'var(--text-muted)' }}>{step.focus}</div>
+                    </div>
                   </div>
-                  <div style={{fontSize:'.82rem',color:'#6f6f6f'}}>{step.focus}</div>
-                </div>
-              </div>
-            );
-          })}
+                );
+              })}
+            </div>
+          )}
 
-          {/* Salary Forecast */}
-          {tab==='salary' && (()=>{
-            const s=result.salary_prediction||{};
-            const items=[['Current',s.current,'#6f6f6f'],['12 Months',s['12_months'],'#f1c21b'],['24 Months',s['24_months'],'#0f62fe'],['36 Months',s['36_months'],'#42be65']];
-            const vals=items.map(([,v])=>parseInt((v||'0').replace(/\D/g,''))||0);
-            const maxV=Math.max(...vals)||1;
+          {/* ── Salary Forecast ─────────────────────── */}
+          {tab === 'salary' && (() => {
+            const s = result.salary_prediction || {};
+            const items = [
+              ['Current', s.current, '#64748b'],
+              ['12 Months', s['12_months'], '#fbbf24'],
+              ['24 Months', s['24_months'], '#0F62FE'],
+              ['36 Months', s['36_months'], '#34d399'],
+            ];
+            const vals = items.map(([, v]) => parseInt((v || '0').replace(/\D/g, '')) || 0);
+            const maxV = Math.max(...vals) || 1;
             return (
               <>
-                <div className="col-4" style={{marginBottom:'1.5rem'}}>
-                  {items.map(([label,amount,colour])=>(
-                    <div key={label} className="metric-card" style={{borderTopColor:colour,textAlign:'center'}}>
-                      <div className="card-value" style={{color:colour,fontSize:'1.4rem'}}>{amount}</div>
+                <div className="col-4" style={{ marginBottom: '1.5rem' }}>
+                  {items.map(([label, amount, colour]) => (
+                    <div key={label} className="metric-card" style={{ borderTop: `2px solid ${colour}`, textAlign: 'center' }}>
+                      <div className="card-value" style={{ color: colour, fontSize: '1.4rem' }}>{amount}</div>
                       <div className="card-label">{label}</div>
                     </div>
                   ))}
                 </div>
-                <SectionHeader icon="📈" title="Salary Growth Trajectory" />
-                {items.map(([label,,colour],i)=>(
-                  <ProgressBar key={i} label={label} value={Math.round(vals[i]/maxV*100)} colour={colour} />
-                ))}
-                {result.market_insight&&<div className="info-box" style={{marginTop:'1rem'}}>📊 {result.market_insight}</div>}
+                <div className="card">
+                  <SectionHeader icon="📈" title="Salary Growth Trajectory" />
+                  {items.map(([label,, colour], i) => (
+                    <ProgressBar key={i} label={label} value={Math.round(vals[i] / maxV * 100)} colour={colour} />
+                  ))}
+                  {result.market_insight && (
+                    <div className="info-box" style={{ marginTop: '1rem' }}>
+                      📊 {result.market_insight}
+                    </div>
+                  )}
+                </div>
               </>
             );
           })()}
 
-          {/* Top Companies */}
-          {tab==='companies' && (result.top_companies||[]).map((co,i)=>{
-            const c=scoreColour(co.match);
-            return (
-              <div key={i} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'1rem 1.2rem',border:'1px solid #e5e7eb',borderRadius:4,marginBottom:'.75rem',background:'#fff'}}>
-                <div><div style={{fontWeight:600,fontSize:'.95rem'}}>{co.name}</div><div style={{fontSize:'.78rem',color:'#6f6f6f'}}>{co.culture}</div></div>
-                <div style={{textAlign:'right'}}><div style={{fontSize:'1.5rem',fontWeight:700,color:c}}>{co.match}%</div><div style={{fontSize:'.7rem',color:'#6f6f6f'}}>culture match</div></div>
-              </div>
-            );
-          })}
-
-          {/* Future Skills */}
-          {tab==='skills' && (result.future_skills||[]).map((s,i)=>{
-            const c=scoreColour(s.relevance);
-            return (
-              <div key={i} style={{padding:'.85rem 1rem',border:'1px solid #e5e7eb',borderRadius:4,marginBottom:'.5rem',background:'#fff'}}>
-                <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'.4rem'}}>
-                  <strong style={{fontSize:'.9rem'}}>{s.skill}</strong>
-                  <div style={{display:'flex',alignItems:'center',gap:'.75rem'}}><Pill text={s.timeline} style="blue" /><span style={{fontWeight:700,color:c}}>{s.relevance}%</span></div>
-                </div>
-                <div style={{background:'#e5e7eb',borderRadius:2,height:6,overflow:'hidden'}}>
-                  <div style={{width:`${s.relevance}%`,height:6,background:c,borderRadius:2}} />
-                </div>
-              </div>
-            );
-          })}
-
-          {/* Certifications */}
-          {tab==='certs' && (result.certifications||[]).map((cert,i)=>(
-            <div key={i} style={{display:'flex',alignItems:'center',gap:'.75rem',padding:'.85rem 1rem',border:'1px solid #e5e7eb',borderLeft:'4px solid #0f62fe',borderRadius:'0 4px 4px 0',marginBottom:'.5rem',background:'#fff'}}>
-              <span style={{fontSize:'1.2rem'}}>📜</span>
-              <span style={{fontSize:'.9rem',fontWeight:500}}>{cert}</span>
+          {/* ── Top Companies ────────────────────────── */}
+          {tab === 'companies' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '.7rem' }}>
+              {(result.top_companies || []).map((co, i) => {
+                const c = scoreColour(co.match);
+                return (
+                  <div key={i} style={{
+                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                    padding: '1rem 1.2rem',
+                    background: 'rgba(255,255,255,0.02)',
+                    border: '1px solid var(--glass-border)',
+                    borderRadius: 14,
+                    animation: `slideUp .35s ease ${i * 60}ms both`,
+                  }}>
+                    <div>
+                      <div style={{ fontWeight: 600, fontSize: '.95rem', color: 'var(--text-primary)' }}>{co.name}</div>
+                      <div style={{ fontSize: '.78rem', color: 'var(--text-muted)' }}>{co.culture}</div>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <div style={{ fontSize: '1.5rem', fontWeight: 700, color: c }}>{co.match}%</div>
+                      <div style={{ fontSize: '.7rem', color: 'var(--text-muted)' }}>culture match</div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-          ))}
+          )}
+
+          {/* ── Future Skills ─────────────────────────── */}
+          {tab === 'skills' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '.65rem' }}>
+              {(result.future_skills || []).map((s, i) => {
+                const c = scoreColour(s.relevance);
+                return (
+                  <div key={i} style={{
+                    padding: '.9rem 1.1rem',
+                    background: 'rgba(255,255,255,0.02)',
+                    border: '1px solid var(--glass-border)',
+                    borderRadius: 14,
+                    animation: `slideUp .35s ease ${i * 60}ms both`,
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '.5rem' }}>
+                      <strong style={{ fontSize: '.9rem', color: 'var(--text-primary)' }}>{s.skill}</strong>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem' }}>
+                        <Pill text={s.timeline} style="blue" />
+                        <span style={{ fontWeight: 700, color: c, fontSize: '.9rem' }}>{s.relevance}%</span>
+                      </div>
+                    </div>
+                    <div style={{ background: 'rgba(255,255,255,0.06)', borderRadius: 999, height: 5, overflow: 'hidden' }}>
+                      <div style={{ width: `${s.relevance}%`, height: 5, background: `linear-gradient(90deg, ${c}80, ${c})`, borderRadius: 999 }} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* ── Certifications ─────────────────────────── */}
+          {tab === 'certs' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '.6rem' }}>
+              {(result.certifications || []).map((cert, i) => (
+                <div key={i} style={{
+                  display: 'flex', alignItems: 'center', gap: '1rem',
+                  padding: '.9rem 1.1rem',
+                  background: 'rgba(255,255,255,0.02)',
+                  border: '1px solid var(--glass-border)',
+                  borderLeft: '3px solid var(--ibm-blue)',
+                  borderRadius: '0 14px 14px 0',
+                  animation: `slideIn .35s ease ${i * 60}ms both`,
+                }}>
+                  <div style={{ width: 36, height: 36, background: 'var(--ibm-blue-soft)', borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    📜
+                  </div>
+                  <span style={{ fontSize: '.9rem', fontWeight: 500, color: 'var(--text-secondary)' }}>{cert}</span>
+                </div>
+              ))}
+            </div>
+          )}
         </>
       )}
     </Layout>

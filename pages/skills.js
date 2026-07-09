@@ -1,62 +1,68 @@
-// HirePilot AI – Skill Gap Analysis page
+// HirePilot AI – Premium Skill Gap Analysis
 import { useState } from 'react';
 import Layout from '../components/Layout';
 import { SectionHeader, ProgressBar, Pill, Loading, InfoBox, Roadmap, scoreColour } from '../components/UI';
 
 const ROLES = [
-  'Senior Software Engineer','Staff Engineer','Principal Engineer',
-  'Data Scientist','ML Engineer','DevOps / Platform Engineer',
-  'Cloud Architect','Cybersecurity Specialist','AI Research Scientist',
+  'Senior Software Engineer', 'Staff Engineer', 'Principal Engineer',
+  'Data Scientist', 'ML Engineer', 'DevOps / Platform Engineer',
+  'Cloud Architect', 'Cybersecurity Specialist', 'AI Research Scientist',
 ];
 const SKILLS_LIST = [
-  'Python','JavaScript','TypeScript','Java','Go','React','Vue','Node.js',
-  'AWS','GCP','Docker','Kubernetes','Terraform','SQL','MongoDB','Machine Learning','CI/CD',
+  'Python', 'JavaScript', 'TypeScript', 'Java', 'Go', 'React', 'Vue', 'Node.js',
+  'AWS', 'GCP', 'Docker', 'Kubernetes', 'Terraform', 'SQL', 'MongoDB', 'Machine Learning', 'CI/CD',
 ];
 const TABS = [
-  { id:'overview', label:'📊 Skills Overview' },
-  { id:'missing',  label:'❌ Missing Skills' },
-  { id:'certs',    label:'📜 Certifications' },
-  { id:'projects', label:'🔨 Projects' },
-  { id:'roadmap',  label:'🗺️ Roadmap' },
+  { id: 'overview', label: '📊 Skills Overview' },
+  { id: 'missing',  label: '❌ Missing Skills' },
+  { id: 'certs',    label: '📜 Certifications' },
+  { id: 'projects', label: '🔨 Projects' },
+  { id: 'roadmap',  label: '🗺️ Roadmap' },
 ];
 const MOCK = {
-  current_skills:[
-    {name:'Python',level:'Expert',score:90},{name:'React',level:'Advanced',score:80},
-    {name:'Node.js',level:'Intermediate',score:65},{name:'SQL',level:'Advanced',score:78},
-    {name:'Git',level:'Expert',score:92},{name:'AWS (basic)',level:'Beginner',score:40},
+  current_skills: [
+    { name: 'Python',    level: 'Expert',       score: 90 },
+    { name: 'React',     level: 'Advanced',     score: 80 },
+    { name: 'Node.js',   level: 'Intermediate', score: 65 },
+    { name: 'SQL',       level: 'Advanced',     score: 78 },
+    { name: 'Git',       level: 'Expert',       score: 92 },
+    { name: 'AWS (basic)', level: 'Beginner',   score: 40 },
   ],
-  missing_skills:[
-    {name:'Kubernetes',priority:'High',demand:91},{name:'Terraform',priority:'High',demand:87},
-    {name:'GraphQL',priority:'Medium',demand:74},{name:'TypeScript',priority:'High',demand:89},
-    {name:'CI/CD',priority:'High',demand:85},{name:'System Design',priority:'High',demand:93},
+  missing_skills: [
+    { name: 'Kubernetes',    priority: 'High',   demand: 91 },
+    { name: 'Terraform',     priority: 'High',   demand: 87 },
+    { name: 'GraphQL',       priority: 'Medium', demand: 74 },
+    { name: 'TypeScript',    priority: 'High',   demand: 89 },
+    { name: 'CI/CD',         priority: 'High',   demand: 85 },
+    { name: 'System Design', priority: 'High',   demand: 93 },
   ],
-  certifications:[
-    {name:'AWS Solutions Architect Associate',provider:'Amazon',duration:'3 months',url:'https://aws.amazon.com/certification/'},
-    {name:'CKA – Certified Kubernetes Admin',provider:'CNCF',duration:'2 months',url:'https://www.cncf.io/certification/cka/'},
-    {name:'HashiCorp Terraform Associate',provider:'HCP',duration:'6 weeks',url:'https://developer.hashicorp.com/certifications'},
-    {name:'IBM Full Stack Developer',provider:'IBM',duration:'4 months',url:'https://www.ibm.com/training/'},
+  certifications: [
+    { name: 'AWS Solutions Architect Associate', provider: 'Amazon',    duration: '3 months', url: 'https://aws.amazon.com/certification/' },
+    { name: 'CKA – Certified Kubernetes Admin',  provider: 'CNCF',      duration: '2 months', url: 'https://www.cncf.io/certification/cka/' },
+    { name: 'HashiCorp Terraform Associate',     provider: 'HCP',       duration: '6 weeks',  url: 'https://developer.hashicorp.com/certifications' },
+    { name: 'IBM Full Stack Developer',          provider: 'IBM',       duration: '4 months', url: 'https://www.ibm.com/training/' },
   ],
-  projects:[
-    {name:'Build a microservices app with Docker + K8s',difficulty:'Medium',time:'2 weeks'},
-    {name:'Deploy a Terraform-managed AWS infrastructure',difficulty:'Medium',time:'1 week'},
-    {name:'Convert a REST API to GraphQL',difficulty:'Easy',time:'3 days'},
-    {name:'Set up a full CI/CD pipeline with GitHub Actions',difficulty:'Medium',time:'1 week'},
+  projects: [
+    { name: 'Build a microservices app with Docker + K8s',    difficulty: 'Medium', time: '2 weeks' },
+    { name: 'Deploy a Terraform-managed AWS infrastructure',  difficulty: 'Medium', time: '1 week' },
+    { name: 'Convert a REST API to GraphQL',                  difficulty: 'Easy',   time: '3 days' },
+    { name: 'Set up a full CI/CD pipeline with GitHub Actions', difficulty: 'Medium', time: '1 week' },
   ],
-  roadmap:[
-    {step:1,title:'Master TypeScript',detail:'Complete TypeScript course + migrate a JS project',weeks:3},
-    {step:2,title:'Learn Docker deeply',detail:'Containerise your existing projects',weeks:2},
-    {step:3,title:'Kubernetes fundamentals',detail:'Deploy apps to a local K8s cluster via minikube',weeks:4},
-    {step:4,title:'Infrastructure as Code',detail:'Provision AWS infra using Terraform',weeks:3},
-    {step:5,title:'CI/CD Mastery',detail:'Build GitHub Actions pipelines for your repos',weeks:2},
-    {step:6,title:'System Design practice',detail:'Solve 20+ system design problems on Excalidraw',weeks:4},
+  roadmap: [
+    { step: 1, title: 'Master TypeScript',       detail: 'Complete TypeScript course + migrate a JS project',         weeks: 3 },
+    { step: 2, title: 'Learn Docker deeply',     detail: 'Containerise your existing projects',                       weeks: 2 },
+    { step: 3, title: 'Kubernetes fundamentals', detail: 'Deploy apps to a local K8s cluster via minikube',           weeks: 4 },
+    { step: 4, title: 'Infrastructure as Code',  detail: 'Provision AWS infra using Terraform',                       weeks: 3 },
+    { step: 5, title: 'CI/CD Mastery',           detail: 'Build GitHub Actions pipelines for your repos',             weeks: 2 },
+    { step: 6, title: 'System Design practice',  detail: 'Solve 20+ system design problems on Excalidraw',           weeks: 4 },
   ],
-  estimated_weeks:18, salary_uplift_pct:28,
+  estimated_weeks: 18, salary_uplift_pct: 28,
 };
-const PRIO_ORDER = ['High','Medium','Low'];
+const PRIO_ORDER = ['High', 'Medium', 'Low'];
 
 export default function SkillGap() {
   const [role, setRole]       = useState('Senior Software Engineer');
-  const [skills, setSkills]   = useState(['Python','React','Node.js','SQL']);
+  const [skills, setSkills]   = useState(['Python', 'React', 'Node.js', 'SQL']);
   const [result, setResult]   = useState(null);
   const [loading, setLoading] = useState(false);
   const [tab, setTab]         = useState('overview');
@@ -65,8 +71,8 @@ export default function SkillGap() {
     setLoading(true); setResult(null);
     try {
       const r = await fetch('/api/skills', {
-        method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({role, skills}),
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role, skills }),
       });
       if (!r.ok) throw new Error(r.status);
       setResult(await r.json());
@@ -74,35 +80,50 @@ export default function SkillGap() {
     finally   { setLoading(false); }
   }
 
-  const toggleSkill = s => setSkills(prev => prev.includes(s) ? prev.filter(x=>x!==s) : [...prev,s]);
+  const toggleSkill = s => setSkills(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s]);
 
   return (
-    <Layout title="Skill Gap Analysis">
+    <Layout>
       <SectionHeader icon="🧩" title="Skill Gap Analysis" />
-      <p style={{ color:'#6f6f6f', marginBottom:'1.5rem', fontSize:'.9rem' }}>
-        Discover exactly which skills you need to reach your next role — with a personalised learning roadmap.
+      <p style={{ color: 'var(--text-muted)', marginBottom: '1.75rem', fontSize: '.92rem', maxWidth: 560 }}>
+        Discover exactly which skills you need for your next role — with a personalized learning roadmap and IBM SkillsBuild courses.
       </p>
 
-      <div className="card" style={{ marginBottom:'1.5rem' }}>
+      {/* ── Config ──────────────────────────────────── */}
+      <div className="card" style={{ marginBottom: '1.5rem' }}>
         <div className="col-2">
           <div className="form-group">
             <label>🎯 Target Role</label>
-            <select className="form-control" value={role} onChange={e=>setRole(e.target.value)}>
-              {ROLES.map(r=><option key={r}>{r}</option>)}
+            <select className="form-control" value={role} onChange={e => setRole(e.target.value)}>
+              {ROLES.map(r => <option key={r}>{r}</option>)}
             </select>
           </div>
-          <div className="form-group">
-            <label>🛠️ Your Current Skills (click to toggle)</label>
-            <div style={{ display:'flex', flexWrap:'wrap', gap:'.3rem', padding:'.4rem 0' }}>
-              {SKILLS_LIST.map(s=>(
-                <span key={s} className={`pill pill-${skills.includes(s)?'blue':'gray'}`}
-                  style={{ cursor:'pointer' }} onClick={()=>toggleSkill(s)}>{s}</span>
+          <div className="form-group" style={{ marginBottom: 0 }}>
+            <label>🛠️ Your Current Skills <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>(click to toggle)</span></label>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.3rem', padding: '.4rem 0' }}>
+              {SKILLS_LIST.map(s => (
+                <span
+                  key={s}
+                  className={`pill pill-${skills.includes(s) ? 'blue' : 'gray'}`}
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => toggleSkill(s)}
+                >{s}</span>
               ))}
             </div>
           </div>
         </div>
-        <button className="btn" onClick={analyze} disabled={loading}>
-          {loading ? '⏳ Analyzing…' : '🔍 Analyze Skill Gaps'}
+        <button
+          className="btn"
+          style={{ borderRadius: 12, marginTop: '1rem' }}
+          onClick={analyze}
+          disabled={loading}
+        >
+          {loading ? (
+            <>
+              <span style={{ display: 'inline-block', width: 14, height: 14, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin .6s linear infinite' }} />
+              Analyzing…
+            </>
+          ) : '🔍 Analyze Skill Gaps'}
         </button>
       </div>
 
@@ -110,70 +131,129 @@ export default function SkillGap() {
 
       {result && (
         <>
-          <div className="metrics-grid" style={{ gridTemplateColumns:'repeat(4,1fr)', marginBottom:'1.5rem' }}>
-            <div className="metric-card accent-blue"  style={{textAlign:'center'}}><span className="card-icon">🛠️</span><div className="card-value">{result.current_skills?.length}</div><div className="card-label">Current Skills</div></div>
-            <div className="metric-card accent-red"   style={{textAlign:'center'}}><span className="card-icon">❌</span><div className="card-value">{result.missing_skills?.length}</div><div className="card-label">Missing Skills</div></div>
-            <div className="metric-card accent-teal"  style={{textAlign:'center'}}><span className="card-icon">📜</span><div className="card-value">{result.certifications?.length}</div><div className="card-label">Certifications</div></div>
-            <div className="metric-card accent-purple" style={{textAlign:'center'}}><span className="card-icon">⏱️</span><div className="card-value">{result.estimated_weeks}w</div><div className="card-label">Est. Learn Time</div></div>
+          {/* Stats */}
+          <div className="metrics-grid" style={{ gridTemplateColumns: 'repeat(4,1fr)', marginBottom: '1.5rem' }}>
+            <div className="metric-card accent-blue"   style={{ textAlign: 'center' }}><span className="card-icon">🛠️</span><div className="card-value">{result.current_skills?.length}</div><div className="card-label">Current Skills</div></div>
+            <div className="metric-card accent-red"    style={{ textAlign: 'center' }}><span className="card-icon">❌</span><div className="card-value">{result.missing_skills?.length}</div><div className="card-label">Missing Skills</div></div>
+            <div className="metric-card accent-teal"   style={{ textAlign: 'center' }}><span className="card-icon">📜</span><div className="card-value">{result.certifications?.length}</div><div className="card-label">Certifications</div></div>
+            <div className="metric-card accent-purple" style={{ textAlign: 'center' }}><span className="card-icon">⏱️</span><div className="card-value">{result.estimated_weeks}w</div><div className="card-label">Est. Learn Time</div></div>
           </div>
-          {result.salary_uplift_pct>0 && (
-            <div className="success-box" style={{marginBottom:'1rem'}}>
-              💰 Completing this path could increase your salary by up to <strong>{result.salary_uplift_pct}%</strong>.
+
+          {result.salary_uplift_pct > 0 && (
+            <div className="success-box" style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '.6rem' }}>
+              <span>💰</span>
+              Completing this learning path could increase your salary by up to <strong>{result.salary_uplift_pct}%</strong>
             </div>
           )}
 
+          {/* Tabs */}
           <div className="tabs-bar">
-            {TABS.map(t=><button key={t.id} className={`tab-btn${tab===t.id?' active':''}`} onClick={()=>setTab(t.id)}>{t.label}</button>)}
+            {TABS.map(t => (
+              <button key={t.id} className={`tab-btn${tab === t.id ? ' active' : ''}`} onClick={() => setTab(t.id)}>
+                {t.label}
+              </button>
+            ))}
           </div>
 
-          {tab==='overview' && (result.current_skills||[]).map(s=>(
-            <ProgressBar key={s.name} label={`${s.name} (${s.level})`} value={s.score} />
-          ))}
+          {/* Overview – current skills progress */}
+          {tab === 'overview' && (
+            <div className="card">
+              {(result.current_skills || []).map((s, i) => (
+                <ProgressBar key={s.name} label={`${s.name} (${s.level})`} value={s.score} />
+              ))}
+            </div>
+          )}
 
-          {tab==='missing' && [...(result.missing_skills||[])].sort((a,b)=>PRIO_ORDER.indexOf(a.priority)-PRIO_ORDER.indexOf(b.priority)).map((s,i)=>{
-            const c=scoreColour(s.demand); const ps={High:'red',Medium:'yellow',Low:'green'}[s.priority]||'gray';
-            return (
-              <div key={i} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'.75rem 1rem',border:'1px solid #e5e7eb',borderRadius:4,marginBottom:'.5rem',background:'#fff'}}>
-                <div><strong>{s.name}</strong>&nbsp;<Pill text={s.priority} style={ps} /></div>
-                <div style={{textAlign:'right'}}><div style={{fontSize:'.78rem',color:'#6f6f6f'}}>Market demand</div><div style={{fontWeight:700,color:c}}>{s.demand}%</div></div>
-              </div>
-            );
-          })}
+          {/* Missing skills */}
+          {tab === 'missing' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '.6rem' }}>
+              {[...(result.missing_skills || [])].sort((a, b) => PRIO_ORDER.indexOf(a.priority) - PRIO_ORDER.indexOf(b.priority)).map((s, i) => {
+                const c = scoreColour(s.demand);
+                const ps = { High: 'red', Medium: 'yellow', Low: 'green' }[s.priority] || 'gray';
+                return (
+                  <div key={i} style={{
+                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                    padding: '.85rem 1.1rem',
+                    background: 'rgba(255,255,255,0.02)',
+                    border: '1px solid var(--glass-border)',
+                    borderRadius: 14,
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '.65rem' }}>
+                      <strong style={{ color: 'var(--text-primary)' }}>{s.name}</strong>
+                      <Pill text={s.priority} style={ps} />
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <div style={{ fontSize: '.72rem', color: 'var(--text-muted)' }}>Market demand</div>
+                      <div style={{ fontWeight: 700, color: c, fontSize: '.9rem' }}>{s.demand}%</div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
 
-          {tab==='certs' && (
+          {/* Certifications */}
+          {tab === 'certs' && (
             <div className="col-2">
-              {(result.certifications||[]).map((cert,i)=>(
-                <div key={i} style={{border:'1px solid #e5e7eb',borderTop:'3px solid #0f62fe',borderRadius:4,padding:'1rem',marginBottom:'1rem'}}>
-                  <div style={{fontWeight:600,marginBottom:'.3rem'}}>📜 {cert.name}</div>
-                  <div style={{fontSize:'.78rem',color:'#6f6f6f',marginBottom:'.75rem'}}>{cert.provider} · {cert.duration}</div>
-                  <a href={cert.url} target="_blank" rel="noreferrer" className="btn btn-secondary btn-sm">🔗 Learn More</a>
+              {(result.certifications || []).map((cert, i) => (
+                <div key={i} className="card" style={{ borderTop: '2px solid var(--ibm-blue)' }}>
+                  <div style={{ fontWeight: 600, marginBottom: '.35rem', color: 'var(--text-primary)', fontSize: '.9rem' }}>
+                    📜 {cert.name}
+                  </div>
+                  <div style={{ fontSize: '.78rem', color: 'var(--text-muted)', marginBottom: '.85rem' }}>
+                    {cert.provider} · {cert.duration}
+                  </div>
+                  <a href={cert.url} target="_blank" rel="noreferrer" className="btn btn-secondary btn-sm" style={{ borderRadius: 8 }}>
+                    Learn More
+                  </a>
                 </div>
               ))}
             </div>
           )}
 
-          {tab==='projects' && (result.projects||[]).map((p,i)=>{
-            const ds={Easy:'green',Medium:'yellow',Hard:'red'}[p.difficulty]||'gray';
-            return (
-              <div key={i} style={{border:'1px solid #e5e7eb',borderLeft:'4px solid #0f62fe',borderRadius:'0 4px 4px 0',padding:'1rem 1.2rem',marginBottom:'.75rem'}}>
-                <div style={{display:'flex',justifyContent:'space-between'}}>
-                  <strong>{p.name}</strong>
-                  <div><Pill text={p.difficulty} style={ds} /><Pill text={`⏱️ ${p.time}`} style="gray" /></div>
-                </div>
-              </div>
-            );
-          })}
+          {/* Projects */}
+          {tab === 'projects' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '.65rem' }}>
+              {(result.projects || []).map((p, i) => {
+                const ds = { Easy: 'green', Medium: 'yellow', Hard: 'red' }[p.difficulty] || 'gray';
+                return (
+                  <div key={i} style={{
+                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                    padding: '.9rem 1.1rem',
+                    background: 'rgba(255,255,255,0.02)',
+                    border: '1px solid var(--glass-border)',
+                    borderLeft: '3px solid var(--ibm-blue)',
+                    borderRadius: '0 14px 14px 0',
+                  }}>
+                    <strong style={{ color: 'var(--text-secondary)', fontSize: '.875rem' }}>{p.name}</strong>
+                    <div style={{ display: 'flex', gap: '.4rem', flexShrink: 0, marginLeft: '1rem' }}>
+                      <Pill text={p.difficulty} style={ds} />
+                      <Pill text={`⏱️ ${p.time}`} style="gray" />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
 
-          {tab==='roadmap' && (
+          {/* Roadmap */}
+          {tab === 'roadmap' && (
             <>
-              <div className="info-box">🗺️ Estimated: <strong>{result.estimated_weeks} weeks</strong> · Salary increase: <strong>+{result.salary_uplift_pct}%</strong></div>
-              <Roadmap steps={result.roadmap||[]} />
+              <div className="info-box">
+                🗺️ Estimated: <strong>{result.estimated_weeks} weeks</strong> &nbsp;·&nbsp;
+                Salary increase: <strong>+{result.salary_uplift_pct}%</strong>
+              </div>
+              <div className="card" style={{ marginTop: '1rem' }}>
+                <Roadmap steps={result.roadmap || []} />
+              </div>
             </>
           )}
         </>
       )}
 
-      {!loading && !result && <InfoBox>ℹ️ Configure your target role and current skills above, then click Analyze.</InfoBox>}
+      {!loading && !result && (
+        <InfoBox>ℹ️ Configure your target role and current skills above, then click Analyze.</InfoBox>
+      )}
     </Layout>
   );
 }
