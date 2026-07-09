@@ -1,11 +1,68 @@
 """HirePilot AI – /api/skills  POST"""
-import sys, os; sys.path.insert(0, os.path.dirname(__file__))
-from _shared import BaseHTTPRequestHandler, json_response, read_body, mock_skills
+import json
+from http.server import BaseHTTPRequestHandler
+
+_CORS = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type",
+    "Content-Type": "application/json",
+}
+
+def _send(h, data, status=200):
+    body = json.dumps(data).encode()
+    h.send_response(status)
+    for k, v in _CORS.items(): h.send_header(k, v)
+    h.send_header("Content-Length", str(len(body)))
+    h.end_headers()
+    h.wfile.write(body)
+
+def _body(h):
+    n = int(h.headers.get("Content-Length", 0))
+    try: return json.loads(h.rfile.read(n)) if n else {}
+    except: return {}
 
 class handler(BaseHTTPRequestHandler):
     def do_POST(self):
-        body = read_body(self)
-        json_response(self, mock_skills(role=body.get("role", "Senior Software Engineer")))
-    def do_OPTIONS(self):
-        json_response(self, {})
+        _send(self, {
+            "current_skills": [
+                {"name":"Python","level":"Expert","score":90},
+                {"name":"React","level":"Advanced","score":80},
+                {"name":"Node.js","level":"Intermediate","score":65},
+                {"name":"SQL","level":"Advanced","score":78},
+                {"name":"Git","level":"Expert","score":92},
+                {"name":"AWS (basic)","level":"Beginner","score":40},
+            ],
+            "missing_skills": [
+                {"name":"Kubernetes","priority":"High","demand":91},
+                {"name":"Terraform","priority":"High","demand":87},
+                {"name":"GraphQL","priority":"Medium","demand":74},
+                {"name":"TypeScript","priority":"High","demand":89},
+                {"name":"CI/CD","priority":"High","demand":85},
+                {"name":"System Design","priority":"High","demand":93},
+            ],
+            "certifications": [
+                {"name":"AWS Solutions Architect Associate","provider":"Amazon","duration":"3 months","url":"https://aws.amazon.com/certification/"},
+                {"name":"CKA – Certified Kubernetes Admin","provider":"CNCF","duration":"2 months","url":"https://www.cncf.io/certification/cka/"},
+                {"name":"HashiCorp Terraform Associate","provider":"HCP","duration":"6 weeks","url":"https://developer.hashicorp.com/certifications"},
+                {"name":"IBM Full Stack Developer","provider":"IBM","duration":"4 months","url":"https://www.ibm.com/training/"},
+            ],
+            "projects": [
+                {"name":"Build a microservices app with Docker + K8s","difficulty":"Medium","time":"2 weeks"},
+                {"name":"Deploy a Terraform-managed AWS infrastructure","difficulty":"Medium","time":"1 week"},
+                {"name":"Convert a REST API to GraphQL","difficulty":"Easy","time":"3 days"},
+                {"name":"Set up a full CI/CD pipeline with GitHub Actions","difficulty":"Medium","time":"1 week"},
+            ],
+            "roadmap": [
+                {"step":1,"title":"Master TypeScript","detail":"Complete TypeScript course + migrate a JS project","weeks":3},
+                {"step":2,"title":"Learn Docker deeply","detail":"Containerise your existing projects","weeks":2},
+                {"step":3,"title":"Kubernetes fundamentals","detail":"Deploy apps to a local K8s cluster via minikube","weeks":4},
+                {"step":4,"title":"Infrastructure as Code","detail":"Provision AWS infra using Terraform","weeks":3},
+                {"step":5,"title":"CI/CD Mastery","detail":"Build GitHub Actions pipelines for your repos","weeks":2},
+                {"step":6,"title":"System Design practice","detail":"Solve 20+ system design problems on Excalidraw","weeks":4},
+            ],
+            "estimated_weeks": 18,
+            "salary_uplift_pct": 28,
+        })
+    def do_OPTIONS(self): _send(self, {})
     def log_message(self, *a): pass
