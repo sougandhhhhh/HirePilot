@@ -164,7 +164,7 @@ function ChatBubble() {
             title="watsonx-agent"
             srcDoc={iframeDoc}
             style={{ flex: 1, border: 'none', width: '100%' }}
-            sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+            sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-top-navigation-by-user-activation allow-storage-access-by-user-activation allow-popups-to-escape-sandbox"
           />
         </div>
       )}

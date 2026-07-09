@@ -111,7 +111,7 @@ export default function Assistant() {
           title="HirePilot AI – watsonx Orchestrate Agent"
           srcDoc={AGENT_HTML}
           style={{ width: '100%', height: 700, border: 'none', display: 'block' }}
-          sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-top-navigation-by-user-activation"
+          sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-top-navigation-by-user-activation allow-storage-access-by-user-activation allow-popups-to-escape-sandbox"
         />
       </div>
 
