@@ -1,180 +1,175 @@
-# ✈️ HirePilot AI
+# HirePilot AI
 
-**Intelligent AI-powered Job Application Assistant** — built with Streamlit and IBM watsonx Orchestrate.
-
----
-
-## Features
-
-| Page | Description |
-|------|-------------|
-| 📊 Dashboard | Career readiness scores, KPIs, SVG gauges, recent activity |
-| 📄 Resume Analyzer | PDF/DOCX/TXT upload, ATS scoring, keyword gaps, suggestions |
-| 🔍 Job Matcher | AI-curated job matches with salary, match %, 1-click apply |
-| 🧩 Skill Gap Analysis | Missing skills, certifications, roadmap, salary uplift |
-| ✉️ Cover Letter | One-click generation, tone selector, PDF/TXT download |
-| 🎤 Interview Coach | Technical, HR, behavioral & coding Q&A with model answers |
-| 📋 Application Tracker | Full lifecycle table, status badges, upcoming interviews |
-| 🚀 AI Career Advisor | Roadmap timeline, salary forecast, top companies, future skills |
-| 🤖 AI Assistant | Live chat with IBM watsonx Orchestrate embedded agent |
+**Enterprise-grade AI Career Copilot** — built with [Next.js 14](https://nextjs.org) and [IBM watsonx.ai](https://www.ibm.com/products/watsonx-ai). Analyzes resumes, matches jobs, bridges skill gaps, coaches interviews, generates cover letters, and tracks applications — all powered by Granite / Llama 3 via a custom AI agent.
 
 ---
 
-## ⚡ Deployment — Choose Your Platform
+## Pages
 
-### ✅ Option 1: Streamlit Community Cloud (Recommended — Free)
-
-1. Push this repo to GitHub (already done)
-2. Go to **https://share.streamlit.io** → "New app"
-3. Set:
-   - **Repository**: `sougandhhhhh/HirePilot`
-   - **Branch**: `master`
-   - **Main file path**: `app.py`
-4. Under **Advanced settings → Secrets**, paste:
-   ```toml
-   WATSONX_API_KEY    = "your_ibm_cloud_api_key"
-   WATSONX_PROJECT_ID = "your_project_id"
-   WATSONX_API_URL    = "https://us-south.ml.cloud.ibm.com"
-   USE_MOCK_DATA      = false
-   ```
-5. Click **Deploy** — app is live in ~60 seconds at `https://your-app.streamlit.app`
+| Route | Page |
+|-------|------|
+| `/` | Dashboard — career readiness scores, KPIs, quick actions |
+| `/resume` | Resume Analyzer — ATS scoring, keyword gaps, suggestions |
+| `/jobs` | Job Matcher — match percentage, skill comparison, salary estimates |
+| `/skills` | Skill Gap Analysis — missing skills, learning roadmap |
+| `/cover-letter` | Cover Letter Generator — tone selector, download |
+| `/interview` | Interview Coach — technical, HR, behavioral Q&A |
+| `/tracker` | Application Tracker — lifecycle table, status badges |
+| `/advisor` | Career Advisor — roadmap, salary forecast, future skills |
+| `/assistant` | AI Assistant — full-page chat with watsonx.ai agent |
 
 ---
 
-### Option 2: Railway (One-click, $5/mo)
+## Architecture
 
-[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/new/template)
-
-1. Connect your GitHub repo
-2. Railway auto-detects the `Procfile` and runs:
-   ```
-   streamlit run app.py --server.port=$PORT --server.address=0.0.0.0
-   ```
-3. Add env vars in Railway dashboard (same keys as above)
-
----
-
-### Option 3: Render (Free tier available)
-
-1. Create a new **Web Service** pointing to this repo
-2. Set **Start Command**:
-   ```
-   streamlit run app.py --server.port=10000 --server.address=0.0.0.0
-   ```
-3. Add environment variables in the Render dashboard
-
----
-
-### Option 4: Docker (Self-hosted / Any Cloud)
-
-```bash
-docker build -t hirepilot-ai .
-docker run -p 8501:8501 \
-  -e WATSONX_API_KEY=your_key \
-  -e WATSONX_PROJECT_ID=your_project_id \
-  -e USE_MOCK_DATA=false \
-  hirepilot-ai
+```
+User Browser
+     │
+     ▼
+Next.js (Vercel)
+  ├── pages/*.js          → Static/client pages
+  ├── pages/api/chat.js   → Serverless function (runs on Vercel)
+  │     │
+  │     ├── 1. Gets IAM token from IBM Cloud
+  │     └── 2. Calls watsonx.ai text generation API (Llama 3 / Granite)
+  │
+  └── components/
+       ├── ChatWindow.js   → Reusable chat UI (used by /assistant + floating bubble)
+       ├── Layout.js       → App shell: sidebar, theme toggle, settings, chat bubble
+       └── theme/          → Dark/Light theme system with CSS variables
 ```
 
-Then open **http://localhost:8501**
+**No Python, no Flask, no separate backend.** The AI agent runs entirely inside Next.js API routes on Vercel.
 
 ---
 
-### Option 5: Local Development
+## Getting Started
+
+### Prerequisites
+- Node.js 18+
+- An IBM Cloud account with watsonx.ai provisioned
+- An IBM Cloud API key
+
+### 1. Clone & install
 
 ```bash
 git clone https://github.com/sougandhhhhh/HirePilot.git
 cd HirePilot
-
-pip install -r requirements.txt
-
-# Optional: configure watsonx credentials
-cp .streamlit/secrets.toml.example .streamlit/secrets.toml
-# Edit secrets.toml with your IBM watsonx credentials
-
-streamlit run app.py
+npm install
 ```
+
+### 2. Configure environment
+
+Create `.env.local` in the project root:
+
+```env
+WATSONX_API_KEY=your-ibm-cloud-api-key
+WATSONX_PROJECT_ID=your-watsonx-project-id
+WATSONX_URL=https://au-syd.ml.cloud.ibm.com
+WATSONX_MODEL_ID=meta-llama/llama-3-3-70b-instruct
+```
+
+### 3. Run locally
+
+```bash
+npm run dev
+```
+
+Open **http://localhost:3000**.
 
 ---
 
-### ⚠️ Why Not Vercel?
+## Deploy to Vercel
 
-Vercel runs **serverless functions** with a maximum execution time of 60 seconds and no persistent process support. Streamlit requires:
-- A **long-running WebSocket server** (persistent connection per user)
-- A **stateful Python process** (session state, file uploads, etc.)
+### 1. Push to GitHub
 
-Vercel is not compatible with these requirements. The `vercel.json` in this repo serves a **redirect page** pointing to the Streamlit Community Cloud deployment.
+```bash
+git add -A
+git commit -m "Ready for deploy"
+git push origin master
+```
+
+### 2. Import project
+
+Go to [vercel.com](https://vercel.com) → **Add New Project** → Import your GitHub repo.
+
+### 3. Set environment variables
+
+In **Vercel Dashboard → Project → Settings → Environment Variables**, add:
+
+| Name | Value |
+|------|-------|
+| `WATSONX_API_KEY` | *(your IBM Cloud API key)* |
+| `WATSONX_PROJECT_ID` | `acf4d1ce-68c3-4d99-ae6b-2e828586453c` |
+| `WATSONX_URL` | `https://au-syd.ml.cloud.ibm.com` |
+| `WATSONX_MODEL_ID` | `meta-llama/llama-3-3-70b-instruct` |
+
+### 4. Deploy
+
+Click **Deploy**. The AI assistant will work on the live site immediately.
 
 ---
 
 ## Project Structure
 
 ```
-HirePilot/
-├── app.py                         # Main entry point & page router
-├── requirements.txt
-├── Procfile                       # Railway / Render / Heroku
-├── Dockerfile                     # Docker / any container cloud
-├── runtime.txt                    # Python version pin
-├── vercel.json                    # Vercel redirect (see note above)
-├── api/
-│   └── index.py                   # Vercel handler (serves redirect page)
-│
-├── .streamlit/
-│   ├── config.toml                # Theme & server settings
-│   └── secrets.toml.example       # Secret keys template
-│
-├── pages/
-│   ├── dashboard.py
-│   ├── resume_analyzer.py
-│   ├── job_matcher.py
-│   ├── skill_gap.py
-│   ├── cover_letter.py
-│   ├── interview_coach.py
-│   ├── app_tracker.py
-│   ├── career_advisor.py
-│   └── ai_assistant.py            # IBM watsonx Orchestrate embedded agent
-│
-├── components/
-│   └── ui_components.py           # Cards, sidebar, gauges, floating chat bubble
-│
-├── services/
-│   └── watsonx_service.py         # IBM watsonx Orchestrate REST client
-│
-└── utils/
-    ├── config.py                  # Constants, secrets resolution
-    ├── helpers.py                 # File parsing, session init, formatters
-    └── styling.py                 # IBM Carbon CSS
+components/
+├── ChatWindow.js        # Reusable chat UI (messages, input, typing indicator)
+├── Layout.js            # App shell: sidebar, top bar, settings, floating chat
+├── UI.js                # Shared UI primitives (SectionHeader, Pill, etc.)
+├── WatsonxAgent.js      # Full-page assistant wrapper for /assistant route
+├── WatsonxService.js    # watsonx.ai REST client helpers
+└── theme/
+    ├── ThemeContext.js   # Theme provider + useTheme hook
+    ├── ThemeDropdown.js  # Animated theme picker (Framer Motion)
+    └── themeUtils.js     # localStorage persistence, system detection
+
+pages/
+├── _app.js              # Root app wrapper with ThemeProvider
+├── _document.js         # Anti-flicker inline script
+├── index.js             # Dashboard
+├── resume.js, jobs.js, skills.js, cover-letter.js, interview.js
+├── tracker.js, advisor.js, assistant.js
+└── api/
+    └── chat.js          # Serverless API route → watsonx.ai
+
+styles/
+└── globals.css          # Design tokens, dark + light theme, component styles
+
+public/
+└── logo.png             # Brand asset
 ```
 
 ---
 
-## IBM watsonx Integration
+## Design System
 
-### Embedded Chat Agent
-The 🤖 AI Assistant page and floating chat bubble use the **IBM watsonx Orchestrate** embedded agent loaded via `wxoLoader.js`.
+- **Font**: IBM Plex Sans
+- **Theme**: Dark-first with Light mode override — CSS custom properties, Framer Motion transitions
+- **Components**: Glass-morphism panels, gradient accents, animated hover states
+- **Responsive**: Collapsible sidebar, mobile-adaptive layouts, bottom-sheet theme picker
 
-### REST Agents (per page)
-| Agent | Endpoint |
-|-------|----------|
-| Resume Analyzer | `/v1/agents/resume-analyzer/invoke` |
-| Job Matcher | `/v1/agents/job-matcher/invoke` |
-| Skill Gap | `/v1/agents/skill-gap-analyzer/invoke` |
-| Cover Letter | `/v1/agents/cover-letter-generator/invoke` |
-| Interview Coach | `/v1/agents/interview-coach/invoke` |
-| Career Advisor | `/v1/agents/career-advisor/invoke` |
+## AI Agent
 
-Set `USE_MOCK_DATA = false` in secrets/env to switch from demo data to live agents.
+The chat agent uses the full system prompt defined in `pages/api/chat.js` with expertise in:
+
+- Resume analysis & ATS optimization
+- Job matching & skill gap analysis
+- Interview preparation & coaching
+- Cover letter generation
+- Application tracking & career advising
+
+Every recommendation includes confidence scoring with the disclaimer that scores are AI-generated estimates.
 
 ---
 
 ## Tech Stack
 
-- **Frontend**: Streamlit + IBM Carbon Design System
-- **AI Chat**: IBM watsonx Orchestrate (embedded agent + REST)
-- **AI Models**: IBM Granite, Meta Llama 3 (via watsonx.ai)
-- **PDF Parsing**: PyMuPDF, pdfminer.six, python-docx
-- **PDF Generation**: fpdf2
+- **Framework**: Next.js 14 (Pages Router)
+- **AI Backend**: IBM watsonx.ai (Meta Llama 3 / IBM Granite)
+- **Animation**: Framer Motion
+- **Deployment**: Vercel
+- **Auth**: None (client-side app)
 
 ---
 

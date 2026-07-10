@@ -144,7 +144,7 @@ export default function ChatWindow({ isFloating }) {
             color: 'var(--red)', fontSize: '.82rem',
             textAlign: 'center',
           }}>
-            {error === 'Failed to fetch' ? 'Backend server not running. Start it with: cd backend && python app.py' : error}
+            {error === 'Failed to fetch' ? 'Cannot reach the AI assistant. Ensure WATSONX_API_KEY, WATSONX_PROJECT_ID, and WATSONX_URL are set in Vercel Environment Variables and redeploy.' : error}
           </div>
         )}
 
