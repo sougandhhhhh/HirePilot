@@ -36,10 +36,23 @@ export default function Layout({ children }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const { theme } = useTheme();
+  const [fontSize, setFontSize] = useState(100);
+  const { theme, setTheme } = useTheme();
 
   useEffect(() => { setMounted(true); }, []);
   useEffect(() => { setMobileOpen(false); }, [router.pathname]);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('hirepilot-font-size');
+      if (saved) setFontSize(parseInt(saved, 10));
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    document.documentElement.style.fontSize = `${fontSize}%`;
+    try { localStorage.setItem('hirepilot-font-size', String(fontSize)); } catch {}
+  }, [fontSize]);
 
   const toggleSettings = () => {
     setShowSettings(!showSettings);
@@ -208,14 +221,129 @@ export default function Layout({ children }) {
               ×
             </button>
           </div>
-          <div style={{ marginBottom: '1rem' }}>
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', fontWeight: 500, color: 'var(--text-secondary)' }}>Theme</label>
-            <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-              Current: {theme.charAt(0).toUpperCase() + theme.slice(1)}
+
+          {/* Theme */}
+          <div style={{ marginBottom: '1rem', paddingBottom: '1rem', borderBottom: '1px solid var(--glass-border)' }}>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)' }}>Theme</label>
+            <div style={{ display: 'flex', gap: '.35rem', flexWrap: 'wrap' }}>
+              {[
+                { id: 'light', label: '☀ Light' },
+                { id: 'dark', label: '🌙 Dark' },
+                { id: 'system', label: '💻 System' },
+              ].map((opt) => (
+                <button
+                  key={opt.id}
+                  onClick={() => setTheme(opt.id)}
+                  style={{
+                    flex: 1, minWidth: 70,
+                    padding: '.45rem .5rem',
+                    borderRadius: 8,
+                    border: theme === opt.id ? '1px solid var(--ibm-blue)' : '1px solid var(--glass-border)',
+                    background: theme === opt.id ? 'var(--ibm-blue-soft)' : 'transparent',
+                    color: theme === opt.id ? 'var(--text-primary)' : 'var(--text-secondary)',
+                    cursor: 'pointer',
+                    fontSize: '.78rem',
+                    fontWeight: theme === opt.id ? 600 : 400,
+                    fontFamily: 'inherit',
+                    transition: 'all .15s ease',
+                  }}
+                >
+                  {opt.label}
+                </button>
+              ))}
             </div>
           </div>
-          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-            HirePilot AI v2.0
+
+          {/* Text Size */}
+          <div style={{ marginBottom: '1rem', paddingBottom: '1rem', borderBottom: '1px solid var(--glass-border)' }}>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)' }}>Text Size</label>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem' }}>
+              <button
+                onClick={() => setFontSize(Math.max(80, fontSize - 10))}
+                disabled={fontSize <= 80}
+                style={{
+                  width: 32, height: 32, borderRadius: 8,
+                  border: '1px solid var(--glass-border)',
+                  background: 'transparent',
+                  color: 'var(--text-secondary)',
+                  cursor: 'pointer', fontFamily: 'inherit',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  opacity: fontSize <= 80 ? 0.4 : 1,
+                }}
+              >A−</button>
+              <div style={{
+                flex: 1, textAlign: 'center',
+                fontSize: '0.85rem', fontWeight: 600,
+                color: 'var(--text-primary)',
+              }}>{fontSize}%</div>
+              <button
+                onClick={() => setFontSize(Math.min(140, fontSize + 10))}
+                disabled={fontSize >= 140}
+                style={{
+                  width: 32, height: 32, borderRadius: 8,
+                  border: '1px solid var(--glass-border)',
+                  background: 'transparent',
+                  color: 'var(--text-secondary)',
+                  cursor: 'pointer', fontFamily: 'inherit',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  opacity: fontSize >= 140 ? 0.4 : 1,
+                }}
+              >A+</button>
+              <button
+                onClick={() => setFontSize(100)}
+                style={{
+                  padding: '.3rem .6rem', borderRadius: 8,
+                  border: '1px solid var(--glass-border)',
+                  background: 'transparent',
+                  color: 'var(--text-muted)',
+                  cursor: 'pointer', fontFamily: 'inherit',
+                  fontSize: '.7rem',
+                }}
+              >Reset</button>
+            </div>
+          </div>
+
+          {/* Clear Cache */}
+          <div style={{ marginBottom: '1rem', paddingBottom: '1rem', borderBottom: '1px solid var(--glass-border)' }}>
+            <button
+              onClick={() => {
+                if (window.confirm('Clear local cache and reload?')) {
+                  try { localStorage.clear(); } catch {}
+                  window.location.reload();
+                }
+              }}
+              style={{
+                width: '100%',
+                padding: '.5rem .75rem',
+                borderRadius: 8,
+                border: '1px solid var(--glass-border)',
+                background: 'transparent',
+                color: 'var(--text-secondary)',
+                cursor: 'pointer', fontFamily: 'inherit',
+                fontSize: '.82rem',
+                textAlign: 'left',
+                display: 'flex', alignItems: 'center', gap: '.5rem',
+                transition: 'all .15s ease',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.color = 'var(--red)'; e.currentTarget.style.borderColor = 'var(--red)'; }}
+              onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-secondary)'; e.currentTarget.style.borderColor = 'var(--glass-border)'; }}
+            >
+              <span style={{ fontSize: '1rem' }}>🗑</span>
+              Clear Local Cache
+            </button>
+          </div>
+
+          {/* About */}
+          <div>
+            <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)' }}>About</label>
+            <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
+              <div><strong style={{ color: 'var(--text-secondary)' }}>HirePilot AI</strong> v2.0</div>
+              <div>AI-Powered Career Tools</div>
+              <div style={{ marginTop: '.35rem', fontSize: '.72rem' }}>
+                Built with Next.js &middot; IBM watsonx<br />
+                Premium Design System 2026
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -247,26 +375,29 @@ function ChatBubble() {
     if (!loaded || scriptLoadedRef.current) return;
     scriptLoadedRef.current = true;
 
-    const config = {
-      orchestrationID: process.env.NEXT_PUBLIC_WX_ORCHESTRATION_ID,
-      hostURL: process.env.NEXT_PUBLIC_WX_HOST_URL,
-      crn: process.env.NEXT_PUBLIC_WX_CRN,
-      agentID: process.env.NEXT_PUBLIC_WX_AGENT_ID,
-      agentEnvID: process.env.NEXT_PUBLIC_WX_AGENT_ENV_ID,
-      root: '#chat-root',
-    };
+    const hostURL = process.env.NEXT_PUBLIC_WX_HOST_URL;
+    const orchestrationID = process.env.NEXT_PUBLIC_WX_ORCHESTRATION_ID;
+    const crn = process.env.NEXT_PUBLIC_WX_CRN;
+    const agentId = process.env.NEXT_PUBLIC_WX_AGENT_ID;
+    const agentEnvId = process.env.NEXT_PUBLIC_WX_AGENT_ENV_ID;
 
-    const missingKeys = Object.entries(config).filter(([k, v]) => k !== 'root' && !v).map(([k]) => k);
-    if (missingKeys.length > 0) {
-      console.warn('[ChatBubble] Missing config:', missingKeys.join(', '));
+    const missing = [];
+    if (!orchestrationID) missing.push('NEXT_PUBLIC_WX_ORCHESTRATION_ID');
+    if (!hostURL) missing.push('NEXT_PUBLIC_WX_HOST_URL');
+    if (!crn) missing.push('NEXT_PUBLIC_WX_CRN');
+    if (!agentId) missing.push('NEXT_PUBLIC_WX_AGENT_ID');
+    if (!agentEnvId) missing.push('NEXT_PUBLIC_WX_AGENT_ENV_ID');
+
+    if (missing.length > 0) {
+      console.warn('[ChatBubble] Missing env vars:', missing.join(', '));
       if (containerRef.current) {
         containerRef.current.innerHTML = `
           <div style="display:flex;align-items:center;justify-content:center;height:100%;color:#888;font-family:system-ui;">
             <div style="text-align:center;padding:2rem;">
-              <div style="font-size:2rem;margin-bottom:0.5rem;">⚙</div>
+              <div style="font-size:2rem;margin-bottom:0.5rem;">&#9881;</div>
               <div style="font-weight:600;margin-bottom:0.25rem;">AI Assistant Not Configured</div>
-              <div style="font-size:0.85rem;color:#666;">Missing: ${missingKeys.join(', ')}</div>
-              <div style="font-size:0.75rem;color:#555;margin-top:1rem;">Add env vars to .env.local and restart dev server</div>
+              <div style="font-size:0.85rem;color:#666;">Missing: ${missing.join(', ')}</div>
+              <div style="font-size:0.75rem;color:#555;margin-top:1rem;">Add env vars and redeploy</div>
             </div>
           </div>
         `;
@@ -274,12 +405,28 @@ function ChatBubble() {
       return;
     }
 
+    window.wxOConfiguration = {
+      orchestrationID,
+      hostURL,
+      rootElementID: 'chat-root',
+      deploymentPlatform: 'ibmcloud',
+      crn,
+      chatOptions: {
+        agentId,
+        agentEnvironmentId: agentEnvId,
+      },
+    };
+
+    if (containerRef.current) {
+      containerRef.current.innerHTML = '';
+    }
+
     const script = document.createElement('script');
-    script.src = 'https://au-syd.watson-orchestrate.cloud.ibm.com/wxochat/wxoLoader.js?embed=true';
+    script.src = `${hostURL}/wxochat/wxoLoader.js?embed=true`;
     script.async = true;
     script.onload = () => {
-      if (window.wxoLoader && containerRef.current) {
-        window.wxoLoader(config);
+      if (window.wxoLoader) {
+        window.wxoLoader.init();
       }
     };
     script.onerror = () => {
@@ -288,7 +435,7 @@ function ChatBubble() {
         containerRef.current.innerHTML = `
           <div style="display:flex;align-items:center;justify-content:center;height:100%;color:#f88;font-family:system-ui;">
             <div style="text-align:center;padding:2rem;">
-              <div style="font-size:2rem;margin-bottom:0.5rem;">⚠</div>
+              <div style="font-size:2rem;margin-bottom:0.5rem;">&#9888;</div>
               <div style="font-weight:600;margin-bottom:0.25rem;">Failed to Load AI Agent</div>
               <div style="font-size:0.85rem;color:#888;">Could not load watsonx Orchestrate script</div>
             </div>
