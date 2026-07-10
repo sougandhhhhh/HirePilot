@@ -5,7 +5,7 @@ import { SectionHeader, ProgressBar, Pill, Loading, InfoBox, Roadmap, scoreColou
 const ROLES = [
   'Senior Software Engineer', 'Staff Engineer', 'Principal Engineer',
   'Data Scientist', 'ML Engineer', 'DevOps / Platform Engineer',
-  'Cloud Architect', 'Cybersecurity Specialist', 'AI Research Scientist',
+  'Cloud Architect', 'Cybersecurity Specialist', 'AI Research Scientist', 'Other',
 ];
 const SKILLS_LIST = [
   'Python', 'JavaScript', 'TypeScript', 'Java', 'Go', 'React', 'Vue', 'Node.js',
@@ -21,35 +21,73 @@ const TABS = [
 const PRIO_ORDER = ['High', 'Medium', 'Low'];
 
 export default function SkillGap() {
-  const [role, setRole]       = useState('Senior Software Engineer');
-  const [skills, setSkills]   = useState([]);
-  const [result, setResult]   = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [tab, setTab]         = useState('overview');
+  const [role, setRole]         = useState('Senior Software Engineer');
+  const [customRole, setCustomRole] = useState('');
+  const [skills, setSkills]     = useState([]);
+  const [result, setResult]     = useState(null);
+  const [loading, setLoading]   = useState(false);
+  const [tab, setTab]           = useState('overview');
+
+  const effectiveRole = role === 'Other' ? customRole : role;
 
   async function analyze() {
     setLoading(true); setResult(null);
-    // Basic analysis based on user input - no mock data
-    setTimeout(() => {
-      const currentSkills = skills.map(s => ({ 
-        name: s, 
-        level: 'Intermediate', 
-        score: 70 
-      }));
-      
-      const result = {
-        current_skills: currentSkills,
+    const prompt = `You are a skill gap analyst. Given a target role and current skills, generate a detailed analysis. Return ONLY valid JSON (no markdown, no explanation) with this exact structure:
+{
+  "missing_skills": [{"name": "string", "priority": "High|Medium|Low", "demand": number (0-100)}],
+  "certifications": [{"name": "string", "provider": "string", "duration": "string", "url": "string"}],
+  "projects": [{"name": "string", "difficulty": "Easy|Medium|Hard", "time": "string"}],
+  "roadmap": [{"title": "string", "description": "string", "weeks": number}],
+  "estimated_weeks": number,
+  "salary_uplift_pct": number
+}
+Return at least 4 missing skills, 3 certifications, 3 projects, and 4 roadmap steps.
+
+Target role: ${effectiveRole}
+Current skills: ${skills.join(', ') || 'None specified'}`;
+
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: [{ role: 'user', content: prompt }] }),
+      });
+      if (!res.ok) throw new Error('API request failed');
+      const data = await res.json();
+      let parsed;
+      try {
+        parsed = JSON.parse(data.response);
+      } catch {
+        const jsonMatch = data.response.match(/\{[\s\S]*\}/);
+        parsed = jsonMatch ? JSON.parse(jsonMatch[0]) : null;
+      }
+      if (parsed && Array.isArray(parsed.missing_skills)) {
+        setResult({
+          current_skills: skills.map(s => ({ name: s, level: 'Intermediate', score: 70 })),
+          missing_skills: parsed.missing_skills || [],
+          certifications: parsed.certifications || [],
+          projects: parsed.projects || [],
+          roadmap: parsed.roadmap || [],
+          estimated_weeks: parsed.estimated_weeks || 0,
+          salary_uplift_pct: parsed.salary_uplift_pct || 0,
+        });
+        return;
+      }
+      throw new Error('Failed to parse AI response');
+    } catch (err) {
+      console.error('Skill gap error:', err);
+      setResult({
+        current_skills: skills.map(s => ({ name: s, level: 'Intermediate', score: 70 })),
         missing_skills: [],
         certifications: [],
         projects: [],
         roadmap: [],
         estimated_weeks: 0,
         salary_uplift_pct: 0,
-      };
-      
-      setResult(result);
+      });
+    } finally {
       setLoading(false);
-    }, 500);
+    }
   }
 
   const toggleSkill = s => setSkills(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s]);
@@ -66,9 +104,12 @@ export default function SkillGap() {
         <div className="col-2">
           <div className="form-group">
             <label>🎯 Target Role</label>
-            <select className="form-control" value={role} onChange={e => setRole(e.target.value)}>
+            <select className="form-control" value={role} onChange={e => { setRole(e.target.value); setCustomRole(''); }}>
               {ROLES.map(r => <option key={r}>{r}</option>)}
             </select>
+            {role === 'Other' && (
+              <input className="form-control" style={{ marginTop: '.5rem' }} placeholder="Enter target role..." value={customRole} onChange={e => setCustomRole(e.target.value)} />
+            )}
           </div>
           <div className="form-group" style={{ marginBottom: 0 }}>
             <label>🛠️ Your Current Skills <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>(click to toggle)</span></label>
@@ -99,7 +140,7 @@ export default function SkillGap() {
         </button>
       </div>
 
-      {loading && <Loading message="Analyzing your skills…" />}
+      {loading && <Loading message="HirePilot AI is analyzing your skills…" />}
 
       {result && (
         <>

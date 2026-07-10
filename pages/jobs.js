@@ -5,11 +5,11 @@ import { SectionHeader, Pill, Loading, scoreColour } from '../components/UI';
 const ROLES = [
   'Software Engineer','Full Stack Developer','Frontend Engineer','Backend Engineer',
   'Data Scientist','ML Engineer','DevOps Engineer','Cloud Architect',
-  'Product Manager','Mobile Developer','Site Reliability Engineer',
+  'Product Manager','Mobile Developer','Site Reliability Engineer','Other',
 ];
 const LOCATIONS = [
   'Remote','San Francisco, CA','New York, NY','Seattle, WA',
-  'Austin, TX','Boston, MA','London, UK','Berlin, Germany',
+  'Austin, TX','Boston, MA','London, UK','Berlin, Germany','Other',
 ];
 const EXPERIENCE = [
   'Entry Level (0–2 years)','Mid Level (2–5 years)',
@@ -25,7 +25,6 @@ const COMPANY_LOGOS = {
   Stripe: '💳', Cloudflare: '🌐', Databricks: '🔥', Figma: '🎨', Notion: '📝',
 };
 
-// Match percentage ring
 function MatchRing({ pct }) {
   const r = 22;
   const circ = 2 * Math.PI * r;
@@ -58,7 +57,9 @@ function MatchRing({ pct }) {
 
 export default function JobMatcher() {
   const [role, setRole]         = useState('Software Engineer');
+  const [customRole, setCustomRole] = useState('');
   const [loc, setLoc]           = useState('Remote');
+  const [customLoc, setCustomLoc] = useState('');
   const [exp, setExp]           = useState('Mid Level (2–5 years)');
   const [skills, setSkills]     = useState(['Python','React','Node.js']);
   const [minMatch, setMinMatch] = useState(75);
@@ -66,13 +67,62 @@ export default function JobMatcher() {
   const [loading, setLoading]   = useState(false);
   const [added, setAdded]       = useState({});
 
+  const effectiveRole = role === 'Other' ? customRole : role;
+  const effectiveLoc = loc === 'Other' ? customLoc : loc;
+
   async function search() {
     setLoading(true); setResult(null);
-    // No mock data - user needs to provide input
-    setTimeout(() => {
+    const prompt = `You are a job matching AI. Given a candidate profile, return 4-6 matching jobs. Return ONLY valid JSON (no markdown, no explanation) with this exact structure:
+{
+  "total_found": number,
+  "jobs": [
+    {
+      "title": "string",
+      "company": "string",
+      "location": "string",
+      "salary": "string (include $ and K)",
+      "description": "string (1 sentence)",
+      "match_pct": number (0-100),
+      "skills": ["string"],
+      "posted": "string",
+      "remote": boolean,
+      "url": "string"
+    }
+  ]
+}
+
+Candidate profile:
+Role: ${effectiveRole}
+Experience: ${exp}
+Location: ${effectiveLoc}
+Skills: ${skills.join(', ')}`;
+
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: [{ role: 'user', content: prompt }] }),
+      });
+      if (!res.ok) throw new Error('API request failed');
+      const data = await res.json();
+      let parsed;
+      try {
+        parsed = JSON.parse(data.response);
+      } catch {
+        const jsonMatch = data.response.match(/\{[\s\S]*\}/);
+        parsed = jsonMatch ? JSON.parse(jsonMatch[0]) : null;
+      }
+      if (parsed && Array.isArray(parsed.jobs)) {
+        setResult({ total_found: parsed.total_found || parsed.jobs.length, jobs: parsed.jobs });
+        return;
+      }
+      throw new Error('Failed to parse AI response');
+    } catch (err) {
+      console.error('Job search error:', err);
       setResult({ total_found: 0, jobs: [] });
+    } finally {
       setLoading(false);
-    }, 500);
+    }
   }
 
   const toggleSkill = s => setSkills(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s]);
@@ -91,15 +141,21 @@ export default function JobMatcher() {
           <div>
             <div className="form-group">
               <label>🎯 Target Role</label>
-              <select className="form-control" value={role} onChange={e => setRole(e.target.value)}>
+              <select className="form-control" value={role} onChange={e => { setRole(e.target.value); setCustomRole(''); }}>
                 {ROLES.map(r => <option key={r}>{r}</option>)}
               </select>
+              {role === 'Other' && (
+                <input className="form-control" style={{ marginTop: '.5rem' }} placeholder="Enter your role..." value={customRole} onChange={e => setCustomRole(e.target.value)} />
+              )}
             </div>
             <div className="form-group" style={{ marginBottom: 0 }}>
               <label>📍 Preferred Location</label>
-              <select className="form-control" value={loc} onChange={e => setLoc(e.target.value)}>
+              <select className="form-control" value={loc} onChange={e => { setLoc(e.target.value); setCustomLoc(''); }}>
                 {LOCATIONS.map(l => <option key={l}>{l}</option>)}
               </select>
+              {loc === 'Other' && (
+                <input className="form-control" style={{ marginTop: '.5rem' }} placeholder="Enter location..." value={customLoc} onChange={e => setCustomLoc(e.target.value)} />
+              )}
             </div>
           </div>
           <div>
@@ -141,12 +197,12 @@ export default function JobMatcher() {
         </button>
       </div>
 
-      {loading && <Loading message="AI is scanning job listings…" />}
+      {loading && <Loading message="HirePilot AI is scanning job listings…" />}
 
       {result && (
         <>
           <div className="info-box" style={{ marginBottom: '1rem' }}>
-            🎯 Found <strong>{result.total_found}</strong> jobs for <strong>{role}</strong> in <strong>{loc}</strong>.
+            🎯 Found <strong>{result.total_found}</strong> jobs for <strong>{effectiveRole}</strong> in <strong>{effectiveLoc}</strong>.
             Showing <strong>{jobs.length}</strong> results.
           </div>
 
@@ -185,10 +241,8 @@ export default function JobMatcher() {
               return (
                 <div key={i} className="job-card" style={{ animationDelay: `${i * 60}ms` }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem' }}>
-                    {/* Left info */}
                     <div style={{ flex: 1 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem', marginBottom: '.4rem' }}>
-                        {/* Company logo placeholder */}
                         <div style={{
                           width: 40, height: 40, borderRadius: 10,
                           background: 'rgba(255,255,255,0.06)',
@@ -210,7 +264,6 @@ export default function JobMatcher() {
                         {job.description}
                       </p>
 
-                      {/* Meta row */}
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.5rem', marginBottom: '.85rem', alignItems: 'center' }}>
                         <span style={{ fontSize: '.75rem', color: 'var(--green)', fontWeight: 600 }}>
                           💰 {job.salary}
@@ -222,17 +275,14 @@ export default function JobMatcher() {
                         )}
                       </div>
 
-                      {/* Match bar */}
                       <div style={{ background: 'rgba(255,255,255,0.06)', borderRadius: 999, height: 4, overflow: 'hidden', marginBottom: '.85rem' }}>
                         <div style={{ height: 4, borderRadius: 999, background: `linear-gradient(90deg, ${c}80, ${c})`, width: `${job.match_pct}%`, transition: 'width .8s ease' }} />
                       </div>
 
-                      {/* Skills */}
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.3rem', marginBottom: '.85rem' }}>
                         {(job.skills || []).map(s => <Pill key={s} text={s} style="blue" />)}
                       </div>
 
-                      {/* Actions */}
                       <div style={{ display: 'flex', gap: '.65rem' }}>
                         <button
                           className={`btn btn-sm${added[key] ? ' btn-success' : ''}`}
@@ -254,7 +304,6 @@ export default function JobMatcher() {
                       </div>
                     </div>
 
-                    {/* Match ring */}
                     <MatchRing pct={job.match_pct} />
                   </div>
                 </div>
