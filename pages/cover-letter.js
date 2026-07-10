@@ -1,6 +1,5 @@
 // HirePilot AI – Premium Cover Letter Generator
 import { useState } from 'react';
-import Layout from '../components/Layout';
 import { SectionHeader, Loading } from '../components/UI';
 
 const TIPS = [
@@ -61,7 +60,7 @@ Sincerely,
   }
 
   return (
-    <Layout>
+    <>
       <SectionHeader icon="✉️" title="Cover Letter Generator" />
       <p style={{ color: 'var(--text-muted)', marginBottom: '1.75rem', fontSize: '.92rem', maxWidth: 560 }}>
         Generate a professional, tailored cover letter in seconds — powered by AI.
@@ -213,6 +212,6 @@ Sincerely,
           </div>
         ))}
       </div>
-    </Layout>
+    </>
   );
 }

@@ -1,6 +1,5 @@
 // HirePilot AI – Premium Interview Coach
 import { useState } from 'react';
-import Layout from '../components/Layout';
 import { SectionHeader, Pill, Loading, InfoBox, scoreColour } from '../components/UI';
 
 const ROLES = [
@@ -50,7 +49,7 @@ export default function InterviewCoach() {
   const diffStyle = { easy: 'green', medium: 'yellow', hard: 'red' };
 
   return (
-    <Layout>
+    <>
       <SectionHeader icon="🎤" title="Interview Coach" />
       <p style={{ color: 'var(--text-muted)', marginBottom: '1.75rem', fontSize: '.92rem', maxWidth: 560 }}>
         Practice with AI-generated questions tailored to your target role — with model answers and self-evaluation.
@@ -212,6 +211,6 @@ export default function InterviewCoach() {
           )}
         </>
       )}
-    </Layout>
+    </>
   );
 }

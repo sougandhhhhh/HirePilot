@@ -1,5 +1,4 @@
 // HirePilot AI – Premium Landing Dashboard
-import Layout from '../components/Layout';
 import { SectionHeader } from '../components/UI';
 import Link from 'next/link';
 
@@ -14,7 +13,7 @@ const QUICK_ACTIONS = [
 
 export default function Dashboard() {
   return (
-    <Layout>
+    <>
       {/* ── Hero Banner ─────────────────────────────────── */}
       <div className="hero-premium">
         <div style={{ position: 'relative', zIndex: 1 }}>
@@ -69,6 +68,6 @@ export default function Dashboard() {
           The floating AI assistant is always available to help with context-aware guidance.
         </span>
       </div>
-    </Layout>
+    </>
   );
 }

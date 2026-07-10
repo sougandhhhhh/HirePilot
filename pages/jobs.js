@@ -1,6 +1,5 @@
 // HirePilot AI – Premium Job Matcher
 import { useState } from 'react';
-import Layout from '../components/Layout';
 import { SectionHeader, Pill, Loading, scoreColour } from '../components/UI';
 
 const ROLES = [
@@ -80,7 +79,7 @@ export default function JobMatcher() {
   const jobs = (result?.jobs || []).filter(j => j.match_pct >= minMatch);
 
   return (
-    <Layout>
+    <>
       <SectionHeader icon="🔍" title="Job Matcher" />
       <p style={{ color: 'var(--text-muted)', marginBottom: '1.75rem', fontSize: '.92rem', maxWidth: 560 }}>
         Describe your ideal role and let AI surface the highest-match opportunities with salary insights.
@@ -270,6 +269,6 @@ export default function JobMatcher() {
           ℹ️ Configure your preferences above and click <strong>Find Matching Jobs</strong> to discover AI-curated opportunities.
         </div>
       )}
-    </Layout>
+    </>
   );
 }

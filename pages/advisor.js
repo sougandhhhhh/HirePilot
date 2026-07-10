@@ -1,6 +1,5 @@
 // HirePilot AI – Premium AI Career Advisor
 import { useState } from 'react';
-import Layout from '../components/Layout';
 import { SectionHeader, ProgressBar, Pill, Loading, InfoBox, scoreColour } from '../components/UI';
 
 const TABS = [
@@ -38,7 +37,7 @@ export default function Advisor() {
   }
 
   return (
-    <Layout>
+    <>
       <SectionHeader icon="🚀" title="AI Career Advisor" />
       <p style={{ color: 'var(--text-muted)', marginBottom: '1.75rem', fontSize: '.92rem', maxWidth: 560 }}>
         Get a personalized career roadmap, salary forecast, and AI-powered strategic insights.
@@ -247,6 +246,6 @@ export default function Advisor() {
           )}
         </>
       )}
-    </Layout>
+    </>
   );
 }

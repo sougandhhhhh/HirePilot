@@ -1,6 +1,5 @@
 // HirePilot AI – Premium Skill Gap Analysis
 import { useState } from 'react';
-import Layout from '../components/Layout';
 import { SectionHeader, ProgressBar, Pill, Loading, InfoBox, Roadmap, scoreColour } from '../components/UI';
 
 const ROLES = [
@@ -56,7 +55,7 @@ export default function SkillGap() {
   const toggleSkill = s => setSkills(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s]);
 
   return (
-    <Layout>
+    <>
       <SectionHeader icon="🧩" title="Skill Gap Analysis" />
       <p style={{ color: 'var(--text-muted)', marginBottom: '1.75rem', fontSize: '.92rem', maxWidth: 560 }}>
         Discover exactly which skills you need for your next role — with a personalized learning roadmap.
@@ -227,6 +226,6 @@ export default function SkillGap() {
       {!loading && !result && (
         <InfoBox>ℹ️ Configure your target role and current skills above, then click Analyze.</InfoBox>
       )}
-    </Layout>
+    </>
   );
 }

@@ -4,16 +4,6 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 
 const API_BASE = '';
 
-const PAGE_CONTEXT = {
-  '/': 'You are on the Dashboard landing page. Help the user navigate to the right tool.',
-  '/resume': 'The user is on the Resume Analyzer page. Focus on ATS analysis, resume improvements, keyword optimization, and formatting advice.',
-  '/jobs': 'The user is on the Job Matcher page. Focus on resume-to-job comparison, match percentages, missing skills, and job search strategy.',
-  '/skills': 'The user is on the Skill Gap Analysis page. Focus on identifying missing skills, learning roadmaps, course recommendations, and certifications.',
-  '/cover-letter': 'The user is on the Cover Letter Generator page. Focus on writing customized cover letters with the right tone (formal, professional, friendly, startup, enterprise).',
-  '/interview': 'The user is on the Interview Coach page. Focus on generating interview questions (HR, behavioral, technical, coding, situational), providing feedback on answers, and scoring.',
-  '/advisor': 'The user is on the Career Advisor page. Focus on career guidance, roadmap planning, career switching, salary negotiation, LinkedIn optimization, and long-term growth.',
-};
-
 export default function ChatWindow({ isFloating, pageContext, currentPage }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
@@ -27,7 +17,7 @@ export default function ChatWindow({ isFloating, pageContext, currentPage }) {
 
   useEffect(() => { scrollToBottom(); }, [messages, scrollToBottom]);
 
-  const contextToUse = pageContext || PAGE_CONTEXT[currentPage] || PAGE_CONTEXT['/'];
+  const contextToUse = pageContext || 'You are on the Dashboard landing page. Provide general career guidance and help the user navigate to the right tool.';
 
   const sendMessage = async () => {
     const text = input.trim();

@@ -1,6 +1,5 @@
 // HirePilot AI – Premium Resume Analyzer
 import { useState, useRef } from 'react';
-import Layout from '../components/Layout';
 import { SectionHeader, Loading, ProgressBar, Pill, InfoBox, scoreColour, Gauge } from '../components/UI';
 
 const TABS = [
@@ -71,7 +70,7 @@ export default function ResumeAnalyzer() {
   }
 
   return (
-    <Layout>
+    <>
       <SectionHeader icon="📄" title="Resume Analyzer" />
       <p style={{ color: 'var(--text-muted)', marginBottom: '1.75rem', fontSize: '.92rem', maxWidth: 560 }}>
         Upload your resume for an instant ATS score, strengths analysis, and actionable improvement suggestions.
@@ -339,6 +338,6 @@ export default function ResumeAnalyzer() {
           )}
         </div>
       </div>
-    </Layout>
+    </>
   );
 }

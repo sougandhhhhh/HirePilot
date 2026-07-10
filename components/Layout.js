@@ -5,6 +5,7 @@ import { useRouter } from 'next/router';
 import ThemeDropdown from './theme/ThemeDropdown';
 import { useTheme } from './theme/ThemeContext';
 import ChatWindow from './ChatWindow';
+import { getPageContext } from '../lib/pageContext';
 
 const NAV = [
   { href: '/',             icon: '▦',  label: 'Home',           svg: 'M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z' },
@@ -366,17 +367,7 @@ function ChatBubble() {
   const [open, setOpen] = useState(false);
   const router = useRouter();
 
-  const PAGE_CONTEXT = {
-    '/': 'You are on the Dashboard landing page. Help the user navigate to the right tool.',
-    '/resume': 'The user is on the Resume Analyzer page. Focus on ATS analysis, resume improvements, keyword optimization, and formatting advice.',
-    '/jobs': 'The user is on the Job Matcher page. Focus on resume-to-job comparison, match percentages, missing skills, and job search strategy.',
-    '/skills': 'The user is on the Skill Gap Analysis page. Focus on identifying missing skills, learning roadmaps, course recommendations, and certifications.',
-    '/cover-letter': 'The user is on the Cover Letter Generator page. Focus on writing customized cover letters with the right tone (formal, professional, friendly, startup, enterprise).',
-    '/interview': 'The user is on the Interview Coach page. Focus on generating interview questions (HR, behavioral, technical, coding, situational), providing feedback on answers, and scoring.',
-    '/advisor': 'The user is on the Career Advisor page. Focus on career guidance, roadmap planning, career switching, salary negotiation, LinkedIn optimization, and long-term growth.',
-  };
-
-  const currentContext = PAGE_CONTEXT[router.pathname] || PAGE_CONTEXT['/'];
+  const currentContext = getPageContext(router.pathname);
 
   return (
     <>
