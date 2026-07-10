@@ -61,7 +61,7 @@ export default function Layout({ children }) {
       <aside className={sidebarClass} aria-label="Main navigation">
         {/* Brand */}
         <div className="sidebar-brand">
-          <div className="logo-wrap" aria-hidden="true">✈</div>
+          <img src="/logo.png" alt="HirePilot AI Logo" className="logo-image" />
           <div className="brand-text">
             <h1>HirePilot AI</h1>
             <span>IBM watsonx Orchestrate</span>
@@ -210,6 +210,12 @@ export default function Layout({ children }) {
       {router.pathname !== '/assistant' && <ChatBubble />}
 
       <style jsx>{`
+        .logo-image {
+          width: 32px;
+          height: 32px;
+          border-radius: 6px;
+          object-fit: cover;
+        }
         @media (max-width: 768px) {
           .hamburger-btn { display: flex !important; }
         }
@@ -248,7 +254,7 @@ function ChatBubble() {
 </style></head><body>
 <div id="root">
   <div id="ld">
-    <div class="brand">✈ HirePilot AI</div>
+    <div class="brand"><img src="/logo.png" alt="HirePilot AI" style="width: 24px; height: 24px; border-radius: 4px;" /> HirePilot AI</div>
     <div class="sp"></div>
     <span>Connecting to watsonx…</span>
   </div>
@@ -310,13 +316,11 @@ function ChatBubble() {
             borderBottom: '1px solid rgba(255,255,255,0.1)',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem' }}>
-              <div style={{
+              <img src="/logo.png" alt="HirePilot AI" style={{
                 width: 28, height: 28,
-                background: 'rgba(255,255,255,0.15)',
                 borderRadius: 8,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: '.85rem',
-              }}>✈</div>
+                objectFit: 'cover',
+              }} />
               <div>
                 <div style={{ fontSize: '.85rem', fontWeight: 700 }}>HirePilot AI Assistant</div>
                 <div style={{ fontSize: '.65rem', color: 'rgba(255,255,255,0.7)', fontWeight: 400 }}>
