@@ -1,46 +1,7 @@
 // HirePilot AI – Premium AI Assistant
 import Layout from '../components/Layout';
 import { SectionHeader, Pill } from '../components/UI';
-
-
-// Self-contained iframe HTML that boots the wxoLoader
-const AGENT_HTML = `<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<style>
-  *{box-sizing:border-box;margin:0;padding:0}
-  html,body{height:100%;font-family:system-ui,sans-serif;background:#0B1120;overflow:hidden
-  #root{height:100%;width:100%}
-  #root iframe,#root>div{width:100%!important;height:100%!important;border:none!important}
-  #ld{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
-      justify-content:center;gap:.75rem;background:#0B1120}
-  .sp{width:36px;height:36px;border:3px solid rgba(15,98,254,0.2);border-top-color:#0f62fe;
-      border-radius:50%;animation:spin .7s linear infinite}
-  @keyframes spin{to{transform:rotate(360deg)}}
-  .ld-brand{font-size:1rem;font-weight:700;color:#f0f6ff}
-  .ld-text{font-size:.82rem;color:#94a3b8}
-  .err{text-align:center;padding:2rem;color:#94a3b8}
-  .err h3{color:#f0f6ff;margin-bottom:.5rem}
-</style>
-</head>
-<body>
-<div id="root">
-  <div id="ld">
-    <div class="ld-brand">✈ HirePilot AI</div>
-    <div class="sp"></div>
-    <div class="ld-text">Connecting to AI Assistant…</div>
-  </div>
-</div>
-<script>
-  setTimeout(function() {
-    var ld = document.getElementById('ld');
-    if (ld) ld.innerHTML = '<div class="err"><h3>⚠️ AI Assistant not configured</h3><p>Configure your AI provider credentials.</p></div>';
-  }, 0);
-</script>
-</body>
-</html>`;
+import WatsonxAgent from '../components/WatsonxAgent';
 
 const CAPABILITIES = [
   { text: '📄 Resume Analysis',    style: 'blue'   },
@@ -129,12 +90,7 @@ export default function Assistant() {
         </div>
 
         {/* Agent iframe */}
-        <iframe
-          title="HirePilot AI – watsonx Orchestrate Agent"
-          srcDoc={AGENT_HTML}
-          style={{ width: '100%', height: 660, border: 'none', display: 'block' }}
-          sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-top-navigation-by-user-activation allow-storage-access-by-user-activation allow-popups-to-escape-sandbox"
-        />
+        <WatsonxAgent />
       </div>
 
       {/* ── Suggested prompts ────────────────────────── */}
