@@ -263,32 +263,71 @@ export default function Layout({ children }) {
 function ChatBubble() {
   const [open, setOpen] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const containerRef = useRef(null);
+  const scriptLoadedRef = useRef(false);
 
-  const iframeDoc = `<!DOCTYPE html><html><head><meta charset="UTF-8">
-<style>
-  *{box-sizing:border-box;margin:0;padding:0}
-  html,body{height:100%;background:#0B1120;overflow:hidden}
-  #root{height:100%;width:100%}
-  #root iframe,#root>div{width:100%!important;height:100%!important;border:none!important}
-  #ld{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
-      justify-content:center;gap:.75rem;background:#0B1120;font-family:'IBM Plex Sans',sans-serif;
-      font-size:.82rem;color:#94a3b8}
-  .sp{width:32px;height:32px;border:3px solid rgba(15,98,254,0.2);border-top-color:#0f62fe;
-      border-radius:50%;animation:spin .7s linear infinite}
-  @keyframes spin{to{transform:rotate(360deg)}}
-  .brand{font-size:.9rem;font-weight:700;color:#f0f6ff;margin-bottom:.25rem}
-</style></head><body>
-<div id="root">
-  <div id="ld">
-    <div class="brand"><img src="/logo.png" alt="HirePilot AI" style="width: 24px; height: 24px; border-radius: 4px;" /> HirePilot AI</div>
-    <div class="sp"></div>
-    <span>Connecting to AI Assistant…</span>
-  </div>
-</div>
-<script>
-  var l=document.getElementById('ld');
-  if(l)l.innerHTML='<span style="color:#f87171">⚠ AI Assistant not configured</span>';
-</script></body></html>`;
+  useEffect(() => {
+    if (!loaded || scriptLoadedRef.current) return;
+    scriptLoadedRef.current = true;
+
+    const config = {
+      orchestrationID: process.env.NEXT_PUBLIC_WX_ORCHESTRATION_ID,
+      hostURL: process.env.NEXT_PUBLIC_WX_HOST_URL,
+      crn: process.env.NEXT_PUBLIC_WX_CRN,
+      agentID: process.env.NEXT_PUBLIC_WX_AGENT_ID,
+      agentEnvID: process.env.NEXT_PUBLIC_WX_AGENT_ENV_ID,
+      root: '#chat-root',
+    };
+
+    const missingKeys = Object.entries(config).filter(([k, v]) => k !== 'root' && !v).map(([k]) => k);
+    if (missingKeys.length > 0) {
+      console.warn('[ChatBubble] Missing config:', missingKeys.join(', '));
+      if (containerRef.current) {
+        containerRef.current.innerHTML = `
+          <div style="display:flex;align-items:center;justify-content:center;height:100%;color:#888;font-family:system-ui;">
+            <div style="text-align:center;padding:2rem;">
+              <div style="font-size:2rem;margin-bottom:0.5rem;">⚙</div>
+              <div style="font-weight:600;margin-bottom:0.25rem;">AI Assistant Not Configured</div>
+              <div style="font-size:0.85rem;color:#666;">Missing: ${missingKeys.join(', ')}</div>
+              <div style="font-size:0.75rem;color:#555;margin-top:1rem;">Add env vars to .env.local and restart dev server</div>
+            </div>
+          </div>
+        `;
+      }
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.src = 'https://au-syd.watson-orchestrate.cloud.ibm.com/wxochat/wxoLoader.js?embed=true';
+    script.async = true;
+    script.onload = () => {
+      if (window.wxoLoader && containerRef.current) {
+        window.wxoLoader(config);
+      }
+    };
+    script.onerror = () => {
+      console.error('[ChatBubble] Failed to load wxoLoader script');
+      if (containerRef.current) {
+        containerRef.current.innerHTML = `
+          <div style="display:flex;align-items:center;justify-content:center;height:100%;color:#f88;font-family:system-ui;">
+            <div style="text-align:center;padding:2rem;">
+              <div style="font-size:2rem;margin-bottom:0.5rem;">⚠</div>
+              <div style="font-weight:600;margin-bottom:0.25rem;">Failed to Load AI Agent</div>
+              <div style="font-size:0.85rem;color:#888;">Could not load watsonx Orchestrate script</div>
+            </div>
+          </div>
+        `;
+      }
+    };
+    document.head.appendChild(script);
+
+    return () => {
+      if (script.parentNode) script.parentNode.removeChild(script);
+      if (window.wxoLoader && window.wxoLoader.destroy) {
+        window.wxoLoader.destroy();
+      }
+    };
+  }, [loaded]);
 
   return (
     <>
@@ -356,15 +395,32 @@ function ChatBubble() {
             >✕</button>
           </div>
 
-          {/* Agent iframe */}
-          {loaded && (
-            <iframe
-              title="watsonx-agent"
-              srcDoc={iframeDoc}
-              style={{ flex: 1, border: 'none', width: '100%' }}
-              sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-top-navigation-by-user-activation allow-storage-access-by-user-activation allow-popups-to-escape-sandbox"
-            />
-          )}
+          {/* Agent container */}
+          <div
+            ref={containerRef}
+            id="chat-root"
+            style={{ flex: 1, width: '100%', minHeight: 0 }}
+          >
+            {!loaded && (
+              <div style={{
+                display: 'flex', flexDirection: 'column', alignItems: 'center',
+                justifyContent: 'center', height: '100%', gap: '.75rem',
+                background: '#0B1120', fontFamily: 'system-ui', fontSize: '.82rem', color: '#94a3b8'
+              }}>
+                <div style={{ fontSize: '.9rem', fontWeight: 700, color: '#f0f6ff' }}>
+                  <img src="/logo.png" alt="HirePilot AI" style={{ width: 24, height: 24, borderRadius: 4, verticalAlign: 'middle', marginRight: '.5rem' }} /> HirePilot AI
+                </div>
+                <div className="spinner" style={{
+                  width: 32, height: 32, border: '3px solid rgba(15,98,254,0.2)', borderTopColor: '#0f62fe',
+                  borderRadius: '50%', animation: 'spin .7s linear infinite'
+                }} />
+                <span>Connecting to AI Assistant…</span>
+                <style jsx>{`
+                  @keyframes spin { to { transform: rotate(360deg); } }
+                `}</style>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </>

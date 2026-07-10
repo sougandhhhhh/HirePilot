@@ -38,7 +38,7 @@ export default function WatsonxAgent() {
     }
 
     const script = document.createElement('script');
-    script.src = 'https://cdn.watson-orchestrate.ibm.com/embedded-chat/loader.js';
+    script.src = 'https://au-syd.watson-orchestrate.cloud.ibm.com/wxochat/wxoLoader.js?embed=true';
     script.async = true;
     script.onload = () => {
       if (window.wxoLoader && containerRef.current) {
