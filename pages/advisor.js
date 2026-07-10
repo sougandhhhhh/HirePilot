@@ -21,19 +21,61 @@ export default function Advisor() {
   async function getAdvice() {
     setLoading(true); setResult(null);
     const skills = skillsRaw.split(',').map(s => s.trim()).filter(Boolean);
-    // Basic analysis based on user input - no mock data
-    setTimeout(() => {
-      const result = {
-        career_roadmap: [],
+    const prompt = `You are a career advisor AI. Given a user's profile, return ONLY valid JSON (no markdown, no explanation) with this exact structure:
+{
+  "career_roadmap": [{"year": "Now", "title": "string", "focus": "string"}, {"year": "6 months", "title": "string", "focus": "string"}, {"year": "1 year", "title": "string", "focus": "string"}, {"year": "2 years", "title": "string", "focus": "string"}],
+  "salary_prediction": {"current": "string", "12_months": "string", "24_months": "string", "36_months": "string"},
+  "top_companies": [{"name": "string", "culture": "string", "match": number}],
+  "future_skills": [{"skill": "string", "timeline": "string", "relevance": number}],
+  "certifications": ["string"],
+  "market_insight": "string"
+}
+
+User profile:
+Role: ${role}
+Experience: ${exp}
+Skills: ${skills.join(', ') || 'Not specified'}`;
+
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: [{ role: 'user', content: prompt }] }),
+      });
+      if (!res.ok) throw new Error('API request failed');
+      const data = await res.json();
+      let parsed;
+      try {
+        parsed = JSON.parse(data.response);
+      } catch {
+        const jsonMatch = data.response.match(/\{[\s\S]*\}/);
+        parsed = jsonMatch ? JSON.parse(jsonMatch[0]) : null;
+      }
+      if (parsed) {
+        setResult({
+          career_roadmap: Array.isArray(parsed.career_roadmap) ? parsed.career_roadmap : [],
+          salary_prediction: parsed.salary_prediction || {},
+          top_companies: Array.isArray(parsed.top_companies) ? parsed.top_companies : [],
+          future_skills: Array.isArray(parsed.future_skills) ? parsed.future_skills : [],
+          certifications: Array.isArray(parsed.certifications) ? parsed.certifications : [],
+          market_insight: parsed.market_insight || '',
+        });
+        return;
+      }
+      throw new Error('Failed to parse AI response');
+    } catch (err) {
+      console.error('Career advice error:', err);
+      setResult({
+        career_roadmap: [{ year: 'Now', title: 'Error generating advice', focus: 'Please try again later.' }],
         salary_prediction: {},
         top_companies: [],
         future_skills: [],
         certifications: [],
-        market_insight: '',
-      };
-      setResult(result);
+        market_insight: 'Unable to generate career advice at this time.',
+      });
+    } finally {
       setLoading(false);
-    }, 500);
+    }
   }
 
   return (
