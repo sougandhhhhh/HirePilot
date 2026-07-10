@@ -193,11 +193,6 @@ export default function Layout({ children }) {
             <Link href="/terms" className="footer-link">Terms of Service</Link>
             <Link href="/ai-disclaimer" className="footer-link">AI Disclaimer</Link>
           </div>
-          <div style={{ opacity: .6 }}>
-            HirePilot AI v2.0 &nbsp;·&nbsp;
-            AI-Powered Career Tools
-            &nbsp;·&nbsp; Built with Modern Design System
-          </div>
         </footer>
       </main>
 
@@ -339,16 +334,22 @@ export default function Layout({ children }) {
             </button>
           </div>
 
-          {/* About */}
+          {/* Pages */}
           <div>
-            <label style={{ display: 'block', marginBottom: '0.35rem', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)' }}>About</label>
-            <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
-              <div><strong style={{ color: 'var(--text-secondary)' }}>HirePilot AI</strong> v2.0</div>
-              <div>AI-Powered Career Tools</div>
-              <div style={{ marginTop: '.35rem', fontSize: '.72rem' }}>
-                Built with Next.js &middot; IBM watsonx<br />
-                Premium Design System 2026
-              </div>
+            <label style={{ display: 'block', marginBottom: '0.45rem', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-primary)' }}>Pages</label>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '.3rem' }}>
+              <Link href="/about" style={{ color: 'var(--text-muted)', textDecoration: 'none', fontSize: '.78rem', transition: 'color .15s' }}
+                onMouseEnter={e => e.currentTarget.style.color = 'var(--electric)'}
+                onMouseLeave={e => e.currentTarget.style.color = 'var(--text-muted)'}>About</Link>
+              <Link href="/privacy" style={{ color: 'var(--text-muted)', textDecoration: 'none', fontSize: '.78rem', transition: 'color .15s' }}
+                onMouseEnter={e => e.currentTarget.style.color = 'var(--electric)'}
+                onMouseLeave={e => e.currentTarget.style.color = 'var(--text-muted)'}>Privacy Policy</Link>
+              <Link href="/terms" style={{ color: 'var(--text-muted)', textDecoration: 'none', fontSize: '.78rem', transition: 'color .15s' }}
+                onMouseEnter={e => e.currentTarget.style.color = 'var(--electric)'}
+                onMouseLeave={e => e.currentTarget.style.color = 'var(--text-muted)'}>Terms of Service</Link>
+              <Link href="/ai-disclaimer" style={{ color: 'var(--text-muted)', textDecoration: 'none', fontSize: '.78rem', transition: 'color .15s' }}
+                onMouseEnter={e => e.currentTarget.style.color = 'var(--electric)'}
+                onMouseLeave={e => e.currentTarget.style.color = 'var(--text-muted)'}>AI Disclaimer</Link>
             </div>
           </div>
         </div>
