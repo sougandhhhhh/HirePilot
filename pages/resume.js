@@ -1,5 +1,5 @@
 // HirePilot AI – Premium Resume Analyzer
-import { useState, useRef } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { SectionHeader, Loading, ProgressBar, Pill, InfoBox, scoreColour, Gauge } from '../components/UI';
 
 const TABS = [
@@ -20,47 +20,89 @@ export default function ResumeAnalyzer() {
   const [dragging, setDragging] = useState(false);
   const fileRef = useRef();
 
+  async function extractText(file) {
+    const ext = file.name.split('.').pop().toLowerCase();
+    if (ext === 'txt') return await file.text();
+    if (ext === 'pdf') {
+      const buf = await file.arrayBuffer();
+      const raw = new TextDecoder('latin1').decode(buf);
+      const parts = [];
+      let m;
+      const re1 = /\(([^)]*)\)\s*Tj/g;
+      while ((m = re1.exec(raw)) !== null) parts.push(m[1]);
+      const re2 = /\[([^\]]*)\]\s*TJ/g;
+      while ((m = re2.exec(raw)) !== null) {
+        const inner = m[1].match(/\(([^)]*)\)/g);
+        if (inner) inner.forEach(p => parts.push(p.slice(1, -1)));
+      }
+      if (parts.length > 0) return parts.join(' ');
+      const fallback = raw.replace(/[^\x20-\x7E\n]/g, ' ').replace(/\s+/g, ' ').trim();
+      return fallback.length > 200 ? fallback : '';
+    }
+    if (ext === 'docx') {
+      const raw = await file.text();
+      const xmlParts = raw.match(/<w:t[^>]*>([^<]+)<\/w:t>/g);
+      if (xmlParts) return xmlParts.map(t => t.replace(/<[^>]+>/g, '')).join(' ');
+      const readable = raw.replace(/[^\x20-\x7E\n]/g, ' ').replace(/\s+/g, ' ').trim();
+      return readable.length > 200 ? readable : '';
+    }
+    return '';
+  }
+
   async function handleAnalyze() {
     if (!file) return;
     setLoading(true); setError(''); setResult(null);
-    const fileText = await file.text().catch(() => '');
-    setText(fileText || '[Binary file – analysis complete]');
-    
-    // Basic analysis without mock data
-    const wordCount = fileText.split(/\s+/).length;
-    const sections = [];
-    if (fileText.toLowerCase().includes('experience')) sections.push('Experience');
-    if (fileText.toLowerCase().includes('education')) sections.push('Education');
-    if (fileText.toLowerCase().includes('skills')) sections.push('Skills');
-    if (fileText.toLowerCase().includes('summary')) sections.push('Summary');
-    if (fileText.toLowerCase().includes('projects')) sections.push('Projects');
-    
-    const missingSections = ['Summary', 'Projects', 'Awards'].filter(s => !sections.includes(s));
-    
-    const basicResult = {
-      ats_score: Math.min(100, Math.max(50, 70 + Math.floor(wordCount / 20))),
-      confidence_score: 85,
-      word_count: wordCount,
-      strengths: [
-        'Resume uploaded successfully',
-        `Document contains ${sections.length} main sections`,
-        `Word count: ${wordCount}`,
-      ],
-      weaknesses: missingSections.length > 0 
-        ? [`Missing sections: ${missingSections.join(', ')}`]
-        : ['Consider adding more quantified achievements'],
-      missing_keywords: [],
-      suggestions: [
-        'Add a professional summary at the top',
-        'Include specific metrics and achievements',
-        'Tailor keywords to job descriptions',
-      ],
-      sections_found: sections,
-      sections_missing: missingSections,
-    };
-    
-    setResult(basicResult);
-    setLoading(false);
+    const fileText = await extractText(file).catch(() => '');
+    setText(fileText || '[Unable to extract text from this file format]');
+
+    if (!fileText || fileText.length < 50) {
+      setError('Could not extract enough text from this file. Ensure the file is not scanned/image-based.');
+      setLoading(false);
+      return;
+    }
+
+    const prompt = `Analyze this resume and return ONLY valid JSON (no markdown) with this structure:
+{
+  "ats_score": number (0-100),
+  "confidence_score": number (0-100),
+  "word_count": number,
+  "strengths": ["string", ...],
+  "weaknesses": ["string", ...],
+  "missing_keywords": ["string", ...],
+  "suggestions": ["string", ...],
+  "sections_found": ["string", ...],
+  "sections_missing": ["string", ...]
+}
+
+Resume content:
+${fileText.slice(0, 8000)}`;
+
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: [{ role: 'user', content: prompt }] }),
+      });
+      if (!res.ok) throw new Error('API request failed');
+      const data = await res.json();
+      let parsed;
+      try {
+        parsed = JSON.parse(data.response);
+      } catch {
+        const jm = data.response.match(/\{[\s\S]*\}/);
+        parsed = jm ? JSON.parse(jm[0]) : null;
+      }
+      if (parsed && typeof parsed.ats_score === 'number') {
+        setResult(parsed);
+        return;
+      }
+      throw new Error('Failed to parse AI response');
+    } catch (err) {
+      console.error('Resume analysis error:', err);
+      setError('AI analysis failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   }
 
   function handleDrop(e) {
@@ -184,7 +226,7 @@ export default function ResumeAnalyzer() {
 
         {/* ── Results Panel ──────────────────────────── */}
         <div>
-          {loading && <Loading message="AI is analyzing your resume…" />}
+          {loading && <Loading message="HirePilot AI is analyzing your resume…" />}
 
           {!loading && !result && (
             <div style={{
