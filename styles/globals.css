@@ -1422,6 +1422,8 @@ textarea.form-control { resize: vertical; min-height: 100px; }
   transition: var(--theme-transition);
 }
 .app-footer a { color: var(--electric); text-decoration: none; }
+.footer-link { color: var(--text-muted) !important; text-decoration: none; font-size: .78rem; transition: color .15s; }
+.footer-link:hover { color: var(--electric) !important; text-decoration: underline; }
 
 /* ── Scrollbar ───────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 6px; height: 6px; }

@@ -187,9 +187,17 @@ export default function Layout({ children }) {
           {children}
         </div>
         <footer className="app-footer">
-          HirePilot AI v2.0 &nbsp;·&nbsp;
-          AI-Powered Career Tools
-          &nbsp;·&nbsp; Built with Modern Design System
+          <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', justifyContent: 'center', marginBottom: '.5rem' }}>
+            <Link href="/about" className="footer-link">About</Link>
+            <Link href="/privacy" className="footer-link">Privacy Policy</Link>
+            <Link href="/terms" className="footer-link">Terms of Service</Link>
+            <Link href="/ai-disclaimer" className="footer-link">AI Disclaimer</Link>
+          </div>
+          <div style={{ opacity: .6 }}>
+            HirePilot AI v2.0 &nbsp;·&nbsp;
+            AI-Powered Career Tools
+            &nbsp;·&nbsp; Built with Modern Design System
+          </div>
         </footer>
       </main>
 
