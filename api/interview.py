@@ -1,5 +1,6 @@
 """HirePilot AI – /api/interview  POST"""
 import json
+from http.server import BaseHTTPRequestHandler
 
 CORS = {
     "Access-Control-Allow-Origin": "*",
@@ -9,19 +10,11 @@ CORS = {
 }
 
 
-def handler(event, context):
-    if event.get("httpMethod") == "OPTIONS":
-        return {"statusCode": 200, "headers": CORS, "body": "{}"}
-    body = {}
-    try:
-        body = json.loads(event.get("body", "{}"))
-    except Exception:
-        pass
-    role = body.get("role", "Software Engineer")
-    return {
-        "statusCode": 200,
-        "headers": CORS,
-        "body": json.dumps({
+class handler(BaseHTTPRequestHandler):
+    def do_POST(self):
+        body = self._body()
+        role = body.get("role", "Software Engineer")
+        self._send({
             "technical": [
                 {"question": f"Explain the difference between synchronous and asynchronous programming as a {role}.", "answer": "Synchronous blocks the thread until done. Async (callbacks/promises/async-await) lets other work continue while waiting — critical for I/O-bound operations.", "difficulty": "medium", "category": "Core Concepts"},
                 {"question": "How would you design a URL shortener like bit.ly from scratch?", "answer": "Hash function (base62 counter), Redis cache, PostgreSQL storage, load balancer, analytics pipeline. Handle collisions by retrying with salt.", "difficulty": "hard", "category": "System Design"},
@@ -39,5 +32,26 @@ def handler(event, context):
                 {"question": "Implement a function that finds the longest substring without repeating characters.", "answer": "Sliding window with hash set. O(n) time, O(min(m,n)) space where m is charset size.", "difficulty": "medium", "category": "Strings / Sliding Window"},
                 {"question": "Write a function to detect if a binary tree is balanced.", "answer": "DFS post-order. Return -1 if unbalanced, else height. Check |left-right| > 1. O(n) time.", "difficulty": "hard", "category": "Trees / Recursion"},
             ],
-        }),
-    }
+        })
+
+    def do_OPTIONS(self):
+        self._send({})
+
+    def _body(self):
+        n = int(self.headers.get("Content-Length", 0))
+        try:
+            return json.loads(self.rfile.read(n)) if n else {}
+        except Exception:
+            return {}
+
+    def _send(self, data, status=200):
+        body = json.dumps(data).encode()
+        self.send_response(status)
+        for k, v in CORS.items():
+            self.send_header(k, v)
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def log_message(self, *a):
+        pass

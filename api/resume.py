@@ -1,5 +1,6 @@
 """HirePilot AI – /api/resume  POST (multipart file upload)"""
 import json
+from http.server import BaseHTTPRequestHandler
 
 CORS = {
     "Access-Control-Allow-Origin": "*",
@@ -9,13 +10,9 @@ CORS = {
 }
 
 
-def handler(event, context):
-    if event.get("httpMethod") == "OPTIONS":
-        return {"statusCode": 200, "headers": CORS, "body": "{}"}
-    return {
-        "statusCode": 200,
-        "headers": CORS,
-        "body": json.dumps({
+class handler(BaseHTTPRequestHandler):
+    def do_POST(self):
+        self._send({
             "ats_score": 82, "confidence_score": 91, "word_count": 487,
             "strengths": [
                 "Strong technical skill set with Python and cloud technologies",
@@ -38,5 +35,19 @@ def handler(event, context):
             ],
             "sections_found": ["Experience", "Skills", "Education", "Certifications"],
             "sections_missing": ["Summary", "Projects", "Awards"],
-        }),
-    }
+        })
+
+    def do_OPTIONS(self):
+        self._send({})
+
+    def _send(self, data, status=200):
+        body = json.dumps(data).encode()
+        self.send_response(status)
+        for k, v in CORS.items():
+            self.send_header(k, v)
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def log_message(self, *a):
+        pass

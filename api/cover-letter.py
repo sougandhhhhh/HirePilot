@@ -1,5 +1,6 @@
 """HirePilot AI – /api/cover-letter  POST"""
 import json, time
+from http.server import BaseHTTPRequestHandler
 
 CORS = {
     "Access-Control-Allow-Origin": "*",
@@ -9,18 +10,13 @@ CORS = {
 }
 
 
-def handler(event, context):
-    if event.get("httpMethod") == "OPTIONS":
-        return {"statusCode": 200, "headers": CORS, "body": "{}"}
-    body = {}
-    try:
-        body = json.loads(event.get("body", "{}"))
-    except Exception:
-        pass
-    company = body.get("company", "Acme Corp")
-    role = body.get("role", "Software Engineer")
-    today = time.strftime("%B %d, %Y")
-    letter = f"""{today}
+class handler(BaseHTTPRequestHandler):
+    def do_POST(self):
+        body = self._body()
+        company = body.get("company", "Acme Corp")
+        role = body.get("role", "Software Engineer")
+        today = time.strftime("%B %d, %Y")
+        letter = f"""{today}
 
 Hiring Manager
 {company}
@@ -39,8 +35,26 @@ Warm regards,
 
 Alex Johnson
 alex.johnson@email.com | linkedin.com/in/alexjohnson | github.com/alexjohnson""".strip()
-    return {
-        "statusCode": 200,
-        "headers": CORS,
-        "body": json.dumps({"cover_letter": letter, "word_count": len(letter.split()), "tone": "Professional"}),
-    }
+        self._send({"cover_letter": letter, "word_count": len(letter.split()), "tone": "Professional"})
+
+    def do_OPTIONS(self):
+        self._send({})
+
+    def _body(self):
+        n = int(self.headers.get("Content-Length", 0))
+        try:
+            return json.loads(self.rfile.read(n)) if n else {}
+        except Exception:
+            return {}
+
+    def _send(self, data, status=200):
+        body = json.dumps(data).encode()
+        self.send_response(status)
+        for k, v in CORS.items():
+            self.send_header(k, v)
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def log_message(self, *a):
+        pass

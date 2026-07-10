@@ -1,5 +1,6 @@
 """HirePilot AI – /api/skills  POST"""
 import json
+from http.server import BaseHTTPRequestHandler
 
 CORS = {
     "Access-Control-Allow-Origin": "*",
@@ -9,13 +10,9 @@ CORS = {
 }
 
 
-def handler(event, context):
-    if event.get("httpMethod") == "OPTIONS":
-        return {"statusCode": 200, "headers": CORS, "body": "{}"}
-    return {
-        "statusCode": 200,
-        "headers": CORS,
-        "body": json.dumps({
+class handler(BaseHTTPRequestHandler):
+    def do_POST(self):
+        self._send({
             "current_skills": [
                 {"name": "Python", "level": "Expert", "score": 90},
                 {"name": "React", "level": "Advanced", "score": 80},
@@ -54,5 +51,19 @@ def handler(event, context):
             ],
             "estimated_weeks": 18,
             "salary_uplift_pct": 28,
-        }),
-    }
+        })
+
+    def do_OPTIONS(self):
+        self._send({})
+
+    def _send(self, data, status=200):
+        body = json.dumps(data).encode()
+        self.send_response(status)
+        for k, v in CORS.items():
+            self.send_header(k, v)
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def log_message(self, *a):
+        pass

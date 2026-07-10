@@ -1,5 +1,6 @@
 """HirePilot AI – /api/advisor  POST"""
 import json
+from http.server import BaseHTTPRequestHandler
 
 CORS = {
     "Access-Control-Allow-Origin": "*",
@@ -9,13 +10,9 @@ CORS = {
 }
 
 
-def handler(event, context):
-    if event.get("httpMethod") == "OPTIONS":
-        return {"statusCode": 200, "headers": CORS, "body": "{}"}
-    return {
-        "statusCode": 200,
-        "headers": CORS,
-        "body": json.dumps({
+class handler(BaseHTTPRequestHandler):
+    def do_POST(self):
+        self._send({
             "career_roadmap": [
                 {"year": "Now", "title": "Mid-level Engineer", "focus": "Deepen full-stack expertise, contribute to system design decisions"},
                 {"year": "Year 1", "title": "Senior Engineer", "focus": "Lead features end-to-end, mentor 1-2 juniors, own a service"},
@@ -47,5 +44,19 @@ def handler(event, context):
                 "Certified Kubernetes Administrator (CKA)",
             ],
             "market_insight": "Demand for full-stack engineers with cloud-native experience is growing at 22% YoY. Engineers with AI/ML integration skills command a 35% salary premium.",
-        }),
-    }
+        })
+
+    def do_OPTIONS(self):
+        self._send({})
+
+    def _send(self, data, status=200):
+        body = json.dumps(data).encode()
+        self.send_response(status)
+        for k, v in CORS.items():
+            self.send_header(k, v)
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def log_message(self, *a):
+        pass
