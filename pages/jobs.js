@@ -72,7 +72,7 @@ export default function JobMatcher() {
 
   async function search() {
     setLoading(true); setResult(null);
-    const prompt = `You are a job matching AI. Given a candidate profile, return 4-6 matching jobs. Return ONLY valid JSON (no markdown, no explanation) with this exact structure:
+    const prompt = `You are a job matching AI. Given a candidate profile, return 4-6 matching jobs with specific, realistic company names and role details. Be unique to this profile — do NOT reuse the same company descriptions across different inputs. Return ONLY valid JSON (no markdown, no explanation) with this exact structure:
 {
   "total_found": number,
   "jobs": [

@@ -32,7 +32,7 @@ export default function SkillGap() {
 
   async function analyze() {
     setLoading(true); setResult(null);
-    const prompt = `You are a skill gap analyst. Given a target role and current skills, generate a detailed analysis. Return ONLY valid JSON (no markdown, no explanation) with this exact structure:
+    const prompt = `You are a skill gap analyst. Given a target role and current skills, generate a detailed analysis tailored specifically to this profile. Do NOT use generic or templated recommendations — be specific to the role and listed skills. Return ONLY valid JSON (no markdown, no explanation) with this exact structure:
 {
   "missing_skills": [{"name": "string", "priority": "High|Medium|Low", "demand": number (0-100)}],
   "certifications": [{"name": "string", "provider": "string", "duration": "string", "url": "string"}],

@@ -5,7 +5,7 @@ import { SectionHeader, Pill, Loading, InfoBox, scoreColour } from '../component
 const ROLES = [
   'Software Engineer','Full Stack Developer','Data Scientist','ML Engineer',
   'DevOps Engineer','Product Manager','Frontend Engineer','Backend Engineer',
-  'Cloud Architect','Mobile Developer',
+  'Cloud Architect','Mobile Developer','Other',
 ];
 const DIFFICULTIES  = ['All Levels', 'Easy', 'Medium', 'Hard'];
 const CATEGORIES    = [
@@ -17,6 +17,7 @@ const CATEGORIES    = [
 
 export default function InterviewCoach() {
   const [role, setRole]               = useState('Software Engineer');
+  const [customRole, setCustomRole]   = useState('');
   const [diff, setDiff]               = useState('All Levels');
   const [result, setResult]           = useState(null);
   const [loading, setLoading]         = useState(false);
@@ -25,16 +26,17 @@ export default function InterviewCoach() {
   const [selfA, setSelfA]             = useState('');
   const [evalScore, setEvalScore]     = useState(null);
 
+  const effectiveRole = role === 'Other' ? customRole : role;
+
   async function generate() {
     setLoading(true); setResult(null);
-    const prompt = `You are an interview coach. Generate interview questions for a ${role} (difficulty: ${diff}). Return ONLY valid JSON (no markdown, no explanation) with this exact structure:
+    const prompt = `You are an interview coach. Generate 1 interview question per category for a ${effectiveRole} (difficulty: ${diff}). Be specific to this role — avoid generic questions anyone could answer. Return ONLY valid JSON (no markdown, no explanation) with this exact structure:
 {
   "technical": [{"question": "string", "answer": "string", "category": "Technical", "difficulty": "easy|medium|hard"}],
   "hr": [{"question": "string", "answer": "string", "category": "HR", "difficulty": "easy|medium|hard"}],
   "behavioral": [{"question": "string", "answer": "string", "category": "Behavioral", "difficulty": "easy|medium|hard"}],
   "coding": [{"question": "string", "answer": "string", "category": "Coding", "difficulty": "easy|medium|hard"}]
-}
-Generate 2 questions per category with realistic, specific questions and detailed model answers.`;
+}`;
 
     try {
       const res = await fetch('/api/chat', {
@@ -121,9 +123,12 @@ Answer: "${selfA.trim()}"`;
         <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'flex-end' }}>
           <div className="form-group" style={{ flex: 2, margin: 0 }}>
             <label>🎯 Target Role</label>
-            <select className="form-control" value={role} onChange={e => setRole(e.target.value)}>
+            <select className="form-control" value={role} onChange={e => { setRole(e.target.value); setCustomRole(''); }}>
               {ROLES.map(r => <option key={r}>{r}</option>)}
             </select>
+            {role === 'Other' && (
+              <input className="form-control" style={{ marginTop: '.5rem' }} placeholder="Enter your role..." value={customRole} onChange={e => setCustomRole(e.target.value)} />
+            )}
           </div>
           <div className="form-group" style={{ flex: 1, margin: 0 }}>
             <label>📊 Difficulty</label>

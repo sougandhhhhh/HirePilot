@@ -61,7 +61,7 @@ export default function ResumeAnalyzer() {
       return;
     }
 
-    const prompt = `Analyze this resume and return ONLY valid JSON (no markdown) with this structure:
+    const prompt = `Analyze this resume in detail. Be specific to this candidate's content — do NOT use generic or templated phrases. Return ONLY valid JSON (no markdown) with this structure:
 {
   "ats_score": number (0-100),
   "confidence_score": number (0-100),

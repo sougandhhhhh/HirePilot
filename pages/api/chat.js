@@ -73,7 +73,7 @@ function computeMaxTokens(messages) {
 
   const detections = [
     { pattern: /resume|ats/i, tokens: 800 },
-    { pattern: /interview|mock/i, tokens: 700 },
+    { pattern: /interview|mock/i, tokens: 1200 },
     { pattern: /cover\s*letter/i, tokens: 650 },
     { pattern: /career|roadmap|salary|switch/i, tokens: 450 },
     { pattern: /skill gap|learn|course|cert/i, tokens: 600 },

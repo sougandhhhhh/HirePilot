@@ -1460,11 +1460,35 @@ textarea.form-control { resize: vertical; min-height: 100px; }
     overflow-y: auto;
     transform-origin: bottom center;
   }
+  .page-content { padding-top: 3.5rem; }
+  .app-footer { font-size: .65rem; padding: 1.25rem 0 .75rem; }
+  .footer-link { font-size: .7rem; }
+  .chat-panel { width: 100% !important; height: 100% !important; max-height: 100vh !important; bottom: 0 !important; right: 0 !important; border-radius: 0 !important; }
+  .chat-bubble-btn { width: 48px !important; height: 48px !important; bottom: 20px !important; right: 16px !important; font-size: 1.2rem !important; }
 }
 
 @media (max-width: 480px) {
-  .metrics-grid { grid-template-columns: 1fr 1fr; }
-  .main-content { padding: 16px .75rem 2rem; }
+  .metrics-grid { grid-template-columns: 1fr; }
+  .main-content { padding: 12px .5rem 2rem; }
+  .form-group { margin-bottom: .75rem; }
+  .form-control { font-size: .8rem; padding: .5rem .65rem; }
+  .btn-full { width: 100%; }
+  .card { padding: 1rem; }
+  .hero-premium { padding: 2rem 1rem; }
+  .hero-badge { font-size: .7rem; }
+  .page-content h1, .section-header h2 { font-size: 1.2rem; }
+  .section-header p { font-size: .8rem; }
+  .tabs-bar { overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; gap: .3rem; }
+  .tab-btn { font-size: .75rem; padding: .5rem .65rem; white-space: nowrap; }
+  .col-3 .metric-card { padding: .75rem; }
+  .metric-card .card-value { font-size: 1.3rem; }
+  .job-card { padding: 1rem; }
+  .q-card { padding: 1rem; }
+  .q-question { font-size: .82rem; }
+  .pill { font-size: .7rem; padding: .2rem .55rem; }
+  .info-box, .success-box, .warn-box { font-size: .8rem; padding: .65rem .85rem; }
+  .divider { margin: 1.25rem 0; }
+  .bento-grid { grid-template-columns: 1fr; gap: .75rem; }
 }
 
 /* ── Utility ─────────────────────────────────────────────── */

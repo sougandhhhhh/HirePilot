@@ -21,7 +21,7 @@ export default function Advisor() {
   async function getAdvice() {
     setLoading(true); setResult(null);
     const skills = skillsRaw.split(',').map(s => s.trim()).filter(Boolean);
-    const prompt = `You are a career advisor AI. Given a user's profile, return ONLY valid JSON (no markdown, no explanation) with this exact structure:
+    const prompt = `You are a career advisor AI. Given the user's specific role, experience, and skills, provide tailored advice. Do NOT use generic or templated responses — make each recommendation unique to this profile. Return ONLY valid JSON (no markdown, no explanation) with this exact structure:
 {
   "career_roadmap": [{"year": "Now", "title": "string", "focus": "string"}, {"year": "6 months", "title": "string", "focus": "string"}, {"year": "1 year", "title": "string", "focus": "string"}, {"year": "2 years", "title": "string", "focus": "string"}],
   "salary_prediction": {"current": "string", "12_months": "string", "24_months": "string", "36_months": "string"},
