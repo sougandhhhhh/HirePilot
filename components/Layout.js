@@ -13,9 +13,7 @@ const NAV = [
   { href: '/skills',       icon: '◈',  label: 'Skill Gap Analysis' },
   { href: '/cover-letter', icon: '◧',  label: 'Cover Letter' },
   { href: '/interview',    icon: '◎',  label: 'Interview Coach' },
-  { href: '/tracker',      icon: '▦',  label: 'Application Tracker' },
   { href: '/advisor',      icon: '◈',  label: 'AI Career Advisor' },
-  { href: '/assistant',    icon: '◉',  label: 'AI Assistant' },
 ];
 
 const NAV_ICONS = {
@@ -26,9 +24,7 @@ const NAV_ICONS = {
   '/skills':       () => <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>,
   '/cover-letter': () => <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>,
   '/interview':    () => <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 15c1.66 0 2.99-1.34 2.99-3L15 6c0-1.66-1.34-3-3-3S9 4.34 9 6v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 15 6.7 12H5c0 3.42 2.72 6.23 6 6.72V22h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/></svg>,
-  '/tracker':      () => <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg>,
   '/advisor':      () => <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M13.49 5.48c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm-3.6 13.9l1-4.4 2.1 2v6h2v-7.5l-2.1-2 .6-3c1.3 1.5 3.3 2.5 5.5 2.5v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5.1-.8.1l-5.2 2.2v4.7h2v-3.4l1.8-.7-1.6 8.1-4.9-1-.4 2 7 1.4z"/></svg>,
-  '/assistant':    () => <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>,
 };
 
 export default function Layout({ children }) {
@@ -196,8 +192,8 @@ export default function Layout({ children }) {
         </footer>
       </main>
 
-      {/* ── Floating chat bubble (hidden on /assistant) ── */}
-      {router.pathname !== '/assistant' && <ChatBubble />}
+      {/* ── Floating chat bubble (available on ALL pages) ── */}
+      <ChatBubble />
 
       {/* ── Settings Panel ── */}
       {showSettings && (
@@ -368,6 +364,19 @@ export default function Layout({ children }) {
 // ── Custom Floating AI Chat Panel ──────────────────
 function ChatBubble() {
   const [open, setOpen] = useState(false);
+  const router = useRouter();
+
+  const PAGE_CONTEXT = {
+    '/': 'You are on the Dashboard landing page. Help the user navigate to the right tool.',
+    '/resume': 'The user is on the Resume Analyzer page. Focus on ATS analysis, resume improvements, keyword optimization, and formatting advice.',
+    '/jobs': 'The user is on the Job Matcher page. Focus on resume-to-job comparison, match percentages, missing skills, and job search strategy.',
+    '/skills': 'The user is on the Skill Gap Analysis page. Focus on identifying missing skills, learning roadmaps, course recommendations, and certifications.',
+    '/cover-letter': 'The user is on the Cover Letter Generator page. Focus on writing customized cover letters with the right tone (formal, professional, friendly, startup, enterprise).',
+    '/interview': 'The user is on the Interview Coach page. Focus on generating interview questions (HR, behavioral, technical, coding, situational), providing feedback on answers, and scoring.',
+    '/advisor': 'The user is on the Career Advisor page. Focus on career guidance, roadmap planning, career switching, salary negotiation, LinkedIn optimization, and long-term growth.',
+  };
+
+  const currentContext = PAGE_CONTEXT[router.pathname] || PAGE_CONTEXT['/'];
 
   return (
     <>
@@ -436,7 +445,7 @@ function ChatBubble() {
           </div>
 
           <div style={{ flex: 1, width: '100%', minHeight: 0 }}>
-            <ChatWindow isFloating={true} />
+            <ChatWindow isFloating={true} pageContext={currentContext} currentPage={router.pathname} />
           </div>
         </div>
       )}

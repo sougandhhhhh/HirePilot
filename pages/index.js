@@ -1,5 +1,4 @@
-// HirePilot AI – Premium Dashboard
-import { useState } from 'react';
+// HirePilot AI – Premium Landing Dashboard
 import Layout from '../components/Layout';
 import { SectionHeader } from '../components/UI';
 import Link from 'next/link';
@@ -11,8 +10,6 @@ const QUICK_ACTIONS = [
   { href: '/cover-letter', label: 'Cover Letter',      icon: '✉️', accent: '#059669' },
   { href: '/skills',       label: 'Skill Analysis',    icon: '🧩', accent: '#D97706' },
   { href: '/advisor',      label: 'Career Advisor',    icon: '🚀', accent: '#DC2626' },
-  { href: '/tracker',     label: 'Track Applications',icon: '📋', accent: '#475569' },
-  { href: '/assistant',    label: 'AI Assistant',      icon: '🤖', accent: '#2563EB' },
 ];
 
 export default function Dashboard() {
@@ -30,15 +27,15 @@ export default function Dashboard() {
             Your AI Career Intelligence Hub
           </h1>
           <p className="hero-subtitle">
-            Analyze your resume, bridge skill gaps, ace interviews, and track applications —
-            all powered by IBM Agentic AI in one intelligent platform.
+            Analyze your resume, bridge skill gaps, ace interviews, and craft perfect cover letters —
+            all powered by IBM Granite models in one intelligent platform.
           </p>
 
           <div style={{ display: 'flex', gap: '.75rem', marginTop: '1.5rem', flexWrap: 'wrap' }}>
             <Link href="/resume" className="btn" style={{ borderRadius: 12 }}>
               Analyze My Resume
             </Link>
-            <Link href="/assistant" className="btn btn-ghost" style={{ borderRadius: 12 }}>
+            <Link href="/advisor" className="btn btn-ghost" style={{ borderRadius: 12 }}>
               Ask AI Advisor
             </Link>
           </div>
@@ -69,6 +66,7 @@ export default function Dashboard() {
         <span style={{ fontSize: '1.1rem' }}>🤖</span>
         <span>
           Upload your resume and use the tools above to get personalized career insights.
+          The floating AI assistant is always available to help with context-aware guidance.
         </span>
       </div>
     </Layout>
