@@ -1,9 +1,10 @@
 // HirePilot AI – Premium Layout (Collapsible floating sidebar + top navbar)
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import ThemeDropdown from './theme/ThemeDropdown';
 import { useTheme } from './theme/ThemeContext';
+import ChatWindow from './ChatWindow';
 
 const NAV = [
   { href: '/',             icon: '▦',  label: 'Home',           svg: 'M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z' },
@@ -364,100 +365,15 @@ export default function Layout({ children }) {
   );
 }
 
-// ── Premium Floating AI Chat Panel ──────────────────
+// ── Custom Floating AI Chat Panel ──────────────────
 function ChatBubble() {
   const [open, setOpen] = useState(false);
-  const [loaded, setLoaded] = useState(false);
-  const containerRef = useRef(null);
-  const scriptLoadedRef = useRef(false);
-
-  useEffect(() => {
-    if (!loaded || scriptLoadedRef.current) return;
-    scriptLoadedRef.current = true;
-
-    const hostURL = process.env.NEXT_PUBLIC_WX_HOST_URL;
-    const orchestrationID = process.env.NEXT_PUBLIC_WX_ORCHESTRATION_ID;
-    const crn = process.env.NEXT_PUBLIC_WX_CRN;
-    const agentId = process.env.NEXT_PUBLIC_WX_AGENT_ID;
-    const agentEnvId = process.env.NEXT_PUBLIC_WX_AGENT_ENV_ID;
-
-    const missing = [];
-    if (!orchestrationID) missing.push('NEXT_PUBLIC_WX_ORCHESTRATION_ID');
-    if (!hostURL) missing.push('NEXT_PUBLIC_WX_HOST_URL');
-    if (!crn) missing.push('NEXT_PUBLIC_WX_CRN');
-    if (!agentId) missing.push('NEXT_PUBLIC_WX_AGENT_ID');
-    if (!agentEnvId) missing.push('NEXT_PUBLIC_WX_AGENT_ENV_ID');
-
-    if (missing.length > 0) {
-      console.warn('[ChatBubble] Missing env vars:', missing.join(', '));
-      if (containerRef.current) {
-        containerRef.current.innerHTML = `
-          <div style="display:flex;align-items:center;justify-content:center;height:100%;color:#888;font-family:system-ui;">
-            <div style="text-align:center;padding:2rem;">
-              <div style="font-size:2rem;margin-bottom:0.5rem;">&#9881;</div>
-              <div style="font-weight:600;margin-bottom:0.25rem;">AI Assistant Not Configured</div>
-              <div style="font-size:0.85rem;color:#666;">Missing: ${missing.join(', ')}</div>
-              <div style="font-size:0.75rem;color:#555;margin-top:1rem;">Add env vars and redeploy</div>
-            </div>
-          </div>
-        `;
-      }
-      return;
-    }
-
-    window.wxOConfiguration = {
-      orchestrationID,
-      hostURL,
-      rootElementID: 'chat-root',
-      deploymentPlatform: 'ibmcloud',
-      crn,
-      chatOptions: {
-        agentId,
-        agentEnvironmentId: agentEnvId,
-      },
-    };
-
-    if (containerRef.current) {
-      containerRef.current.innerHTML = '';
-    }
-
-    const script = document.createElement('script');
-    script.src = `${hostURL}/wxochat/wxoLoader.js?embed=true`;
-    script.async = true;
-    script.onload = () => {
-      if (window.wxoLoader) {
-        window.wxoLoader.init();
-      }
-    };
-    script.onerror = () => {
-      console.error('[ChatBubble] Failed to load wxoLoader script');
-      if (containerRef.current) {
-        containerRef.current.innerHTML = `
-          <div style="display:flex;align-items:center;justify-content:center;height:100%;color:#f88;font-family:system-ui;">
-            <div style="text-align:center;padding:2rem;">
-              <div style="font-size:2rem;margin-bottom:0.5rem;">&#9888;</div>
-              <div style="font-weight:600;margin-bottom:0.25rem;">Failed to Load AI Agent</div>
-              <div style="font-size:0.85rem;color:#888;">Could not load watsonx Orchestrate script</div>
-            </div>
-          </div>
-        `;
-      }
-    };
-    document.head.appendChild(script);
-
-    return () => {
-      if (script.parentNode) script.parentNode.removeChild(script);
-      if (window.wxoLoader && window.wxoLoader.destroy) {
-        window.wxoLoader.destroy();
-      }
-    };
-  }, [loaded]);
 
   return (
     <>
       <button
         className="chat-bubble-btn"
-        onClick={() => { setOpen(!open); if (!loaded) setLoaded(true); }}
+        onClick={() => setOpen(!open)}
         title="Open AI Assistant"
         aria-label={open ? 'Close AI Assistant' : 'Open AI Assistant'}
         aria-expanded={open}
@@ -519,31 +435,8 @@ function ChatBubble() {
             >✕</button>
           </div>
 
-          {/* Agent container */}
-          <div
-            ref={containerRef}
-            id="chat-root"
-            style={{ flex: 1, width: '100%', minHeight: 0 }}
-          >
-            {!loaded && (
-              <div style={{
-                display: 'flex', flexDirection: 'column', alignItems: 'center',
-                justifyContent: 'center', height: '100%', gap: '.75rem',
-                background: '#0B1120', fontFamily: 'system-ui', fontSize: '.82rem', color: '#94a3b8'
-              }}>
-                <div style={{ fontSize: '.9rem', fontWeight: 700, color: '#f0f6ff' }}>
-                  <img src="/logo.png" alt="HirePilot AI" style={{ width: 24, height: 24, borderRadius: 4, verticalAlign: 'middle', marginRight: '.5rem' }} /> HirePilot AI
-                </div>
-                <div className="spinner" style={{
-                  width: 32, height: 32, border: '3px solid rgba(15,98,254,0.2)', borderTopColor: '#0f62fe',
-                  borderRadius: '50%', animation: 'spin .7s linear infinite'
-                }} />
-                <span>Connecting to AI Assistant…</span>
-                <style jsx>{`
-                  @keyframes spin { to { transform: rotate(360deg); } }
-                `}</style>
-              </div>
-            )}
+          <div style={{ flex: 1, width: '100%', minHeight: 0 }}>
+            <ChatWindow isFloating={true} />
           </div>
         </div>
       )}
