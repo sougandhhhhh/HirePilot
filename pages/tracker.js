@@ -27,14 +27,6 @@ const BADGE_COLORS = {
   Saved:       '#64748b',
 };
 
-const DEMO_APPS = [
-  { company: 'Stripe',     role: 'Senior Software Engineer', applied_date: 'Jan 10, 2025', status: 'Interview',  interview_date: 'Jan 20, 2025', offer_status: 'Pending',     salary: '$145K–$185K', location: 'San Francisco, CA' },
-  { company: 'Cloudflare', role: 'Software Engineer',        applied_date: 'Jan 08, 2025', status: 'Applied',    interview_date: '—',            offer_status: 'Pending',     salary: '$130K–$165K', location: 'Remote' },
-  { company: 'Databricks', role: 'Software Engineer II',     applied_date: 'Jan 05, 2025', status: 'Assessment', interview_date: '—',            offer_status: 'Pending',     salary: '$140K–$175K', location: 'San Francisco, CA' },
-  { company: 'Figma',      role: 'Staff Software Engineer',  applied_date: 'Dec 28, 2024', status: 'Rejected',   interview_date: 'Jan 03, 2025', offer_status: 'N/A',         salary: '$155K–$200K', location: 'New York, NY' },
-  { company: 'IBM',        role: 'AI Software Engineer',     applied_date: 'Dec 20, 2024', status: 'Offer',      interview_date: 'Dec 30, 2024', offer_status: 'Negotiating', salary: '$135K–$160K', location: 'Remote' },
-  { company: 'Notion',     role: 'Principal Engineer',       applied_date: 'Dec 15, 2024', status: 'Saved',      interview_date: '—',            offer_status: 'Pending',     salary: '$160K–$210K', location: 'Remote' },
-];
 
 function KanbanCard({ app, onMove }) {
   const c = BADGE_COLORS[app.status] || '#64748b';
@@ -58,7 +50,7 @@ function KanbanCard({ app, onMove }) {
 }
 
 export default function Tracker() {
-  const [apps, setApps]         = useState(DEMO_APPS);
+  const [apps, setApps]         = useState([]);
   const [search, setSearch]     = useState('');
   const [showAdd, setShowAdd]   = useState(false);
   const [view, setView]         = useState('kanban'); // 'kanban' | 'table'
@@ -94,7 +86,7 @@ export default function Tracker() {
     <Layout>
       <SectionHeader icon="📋" title="Application Tracker" />
       <p style={{ color: 'var(--text-muted)', marginBottom: '1.75rem', fontSize: '.92rem', maxWidth: 560 }}>
-        Track every application, interview, and outcome in a beautiful Kanban board.
+        Track every application, interview, and outcome in a Kanban board.
       </p>
 
       {/* ── KPI Stats ───────────────────────────────── */}

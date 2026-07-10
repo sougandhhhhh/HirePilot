@@ -3,29 +3,6 @@ import { useState } from 'react';
 import Layout from '../components/Layout';
 import { SectionHeader, Loading } from '../components/UI';
 
-function buildMockLetter(company, role) {
-  const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: '2-digit' });
-  return `${today}
-
-Hiring Manager
-${company}
-
-Dear Hiring Manager,
-
-I am writing to express my strong interest in the ${role} position at ${company}. With over three years of hands-on experience building scalable web applications and a deep passion for crafting elegant, maintainable code, I am confident I would make an immediate and lasting contribution to your engineering team.
-
-Throughout my career, I have delivered high-impact projects — reducing API response times by 40%, scaling distributed systems to serve millions of concurrent users, and mentoring junior engineers to grow their craft. My core technical expertise spans Python, React, Node.js, and cloud-native architectures — skills directly aligned with the requirements outlined in your job description.
-
-What excites me most about ${company} is your commitment to engineering excellence and the opportunity to work on products that matter at scale. I thrive in collaborative, fast-paced environments where curiosity and ownership are celebrated.
-
-I would love the opportunity to discuss how my background and enthusiasm can drive meaningful impact at ${company}. Thank you for considering my application — I look forward to the conversation.
-
-Warm regards,
-
-Alex Johnson
-alex.johnson@email.com | linkedin.com/in/alexjohnson | github.com/alexjohnson`;
-}
-
 const TIPS = [
   { icon: '🎯', title: 'Tailor Every Letter', body: 'Customise each letter for the specific company and role. Generic letters have a 3× lower response rate.' },
   { icon: '📊', title: 'Use Numbers', body: 'Quantify achievements wherever possible. "Improved performance by 40%" beats "improved performance".' },
@@ -46,20 +23,27 @@ export default function CoverLetter() {
   async function generate() {
     if (!company.trim() || !role.trim()) { setError('Please fill in Company and Role.'); return; }
     setError(''); setLoading(true); setLetter('');
-    try {
-      const r = await fetch('/api/cover-letter', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ company, role, job_description: jd, tone }),
-      });
-      if (!r.ok) throw new Error(r.status);
-      const d = await r.json();
-      setLetter(d.cover_letter || '');
-    } catch {
-      setLetter(buildMockLetter(company, role));
-    } finally {
+    // Basic template without mock data
+    setTimeout(() => {
+      const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: '2-digit' });
+      const basicLetter = `${today}
+
+Hiring Manager
+${company}
+
+Dear Hiring Manager,
+
+I am writing to express my interest in the ${role} position at ${company}. I believe my skills and experience make me a strong candidate for this role.
+
+I am excited about the opportunity to contribute to ${company} and would welcome the chance to discuss how I can add value to your team.
+
+Thank you for considering my application.
+
+Sincerely,
+[Your Name]`;
+      setLetter(basicLetter);
       setLoading(false);
-    }
+    }, 500);
   }
 
   function copyLetter() {
@@ -80,7 +64,7 @@ export default function CoverLetter() {
     <Layout>
       <SectionHeader icon="✉️" title="Cover Letter Generator" />
       <p style={{ color: 'var(--text-muted)', marginBottom: '1.75rem', fontSize: '.92rem', maxWidth: 560 }}>
-        Generate a professional, tailored cover letter in seconds — powered by IBM watsonx AI.
+        Generate a professional, tailored cover letter in seconds — powered by AI.
       </p>
 
       {/* ── Split screen layout ──────────────────────── */}
@@ -163,7 +147,7 @@ export default function CoverLetter() {
 
         {/* ── Right: Generated letter ──────────────── */}
         <div>
-          {loading && <Loading message="IBM watsonx AI is crafting your cover letter…" />}
+          {loading && <Loading message="AI is crafting your cover letter…" />}
 
           {!loading && !letter && (
             <div style={{

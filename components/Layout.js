@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 
 const NAV = [
-  { href: '/',             icon: '▦',  label: 'Dashboard',           svg: 'M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z' },
+  { href: '/',             icon: '▦',  label: 'Home',           svg: 'M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z' },
   { href: '/resume',       icon: '◱',  label: 'Resume Analyzer' },
   { href: '/jobs',         icon: '◉',  label: 'Job Matcher' },
   { href: '/skills',       icon: '◈',  label: 'Skill Gap Analysis' },
@@ -33,9 +33,28 @@ export default function Layout({ children }) {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [theme, setTheme] = useState('dark');
+  const [showSettings, setShowSettings] = useState(false);
 
   useEffect(() => { setMounted(true); }, []);
   useEffect(() => { setMobileOpen(false); }, [router.pathname]);
+  useEffect(() => {
+    if (theme === 'light') {
+      document.body.style.background = '#f5f5f5';
+      document.body.style.color = '#1a1a1a';
+    } else {
+      document.body.style.background = '#0B1120';
+      document.body.style.color = '#f0f6ff';
+    }
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme(theme === 'dark' ? 'light' : 'dark');
+  };
+
+  const toggleSettings = () => {
+    setShowSettings(!showSettings);
+  };
 
   const sidebarClass = [
     'sidebar',
@@ -64,7 +83,7 @@ export default function Layout({ children }) {
           <img src="/logo.png" alt="HirePilot AI Logo" className="logo-image" />
           <div className="brand-text">
             <h1>HirePilot AI</h1>
-            <span>IBM watsonx Orchestrate</span>
+            <span>AI-Powered Career Tools</span>
           </div>
         </div>
 
@@ -101,19 +120,6 @@ export default function Layout({ children }) {
           })}
         </nav>
 
-        {/* Profile */}
-        <div className="sidebar-profile">
-          <div className="sidebar-avatar" aria-hidden="true">AJ</div>
-          <div className="profile-info">
-            <div className="name">Alex Johnson</div>
-            <div className="role">Full Stack Dev · SF</div>
-          </div>
-        </div>
-
-        <div className="sidebar-status">
-          <div className="status-dot" aria-hidden="true" />
-          <span>Demo Mode · watsonx Active</span>
-        </div>
       </aside>
 
       {/* ── Mobile overlay ─────────────────────────── */}
@@ -142,55 +148,36 @@ export default function Layout({ children }) {
           ☰
         </button>
 
-        {/* Search */}
-        <div className="nav-search" role="search">
-          <span className="nav-search-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
-              <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
-            </svg>
-          </span>
-          <input
-            type="search"
-            placeholder="Search anything…"
-            aria-label="Search"
-          />
-        </div>
-
         <div className="nav-actions">
-          {/* Upload resume */}
-          <button className="nav-btn-primary nav-btn" title="Upload Resume">
-            <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor">
-              <path d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z"/>
-            </svg>
-            <span style={{ fontSize: '.75rem', fontWeight: 600 }}>Upload</span>
+          {/* Theme Toggle */}
+          <button 
+            className="nav-btn" 
+            title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'} 
+            aria-label="Toggle theme"
+            onClick={toggleTheme}
+          >
+            {theme === 'dark' ? (
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                <path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0 .39-.39.39-1.03 0-1.41l-1.06-1.06zm1.06-10.96c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06zM7.05 18.36c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06z"/>
+              </svg>
+            ) : (
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                <path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"/>
+              </svg>
+            )}
           </button>
-
-          {/* Notifications */}
-          <button className="nav-btn" title="Notifications" aria-label="Notifications">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
-              <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
-            </svg>
-            <span className="notification-badge" aria-label="3 notifications" />
-          </button>
-
-          {/* Quick AI */}
-          <Link href="/assistant" className="nav-btn" title="AI Assistant" style={{ textDecoration: 'none' }}>
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
-              <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/>
-            </svg>
-          </Link>
 
           {/* Settings */}
-          <button className="nav-btn" title="Settings" aria-label="Settings">
+          <button 
+            className="nav-btn" 
+            title="Settings" 
+            aria-label="Settings"
+            onClick={toggleSettings}
+          >
             <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
               <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
             </svg>
           </button>
-
-          {/* Avatar */}
-          <div className="nav-avatar" title="Profile" role="button" tabIndex={0}>
-            AJ
-          </div>
         </div>
       </header>
 
@@ -201,13 +188,61 @@ export default function Layout({ children }) {
         </div>
         <footer className="app-footer">
           HirePilot AI v2.0 &nbsp;·&nbsp;
-          Powered by <a href="https://www.ibm.com/products/watsonx-orchestrate" target="_blank" rel="noreferrer">IBM watsonx Orchestrate</a>
-          &nbsp;·&nbsp; Built with IBM Carbon Design System
+          AI-Powered Career Tools
+          &nbsp;·&nbsp; Built with Modern Design System
         </footer>
       </main>
 
       {/* ── Floating chat bubble (hidden on /assistant) ── */}
       {router.pathname !== '/assistant' && <ChatBubble />}
+
+      {/* ── Settings Panel ── */}
+      {showSettings && (
+        <div style={{
+          position: 'fixed',
+          top: 60,
+          right: 20,
+          width: 300,
+          background: theme === 'dark' ? '#1e293b' : '#ffffff',
+          border: `1px solid ${theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
+          borderRadius: 12,
+          padding: '1.5rem',
+          boxShadow: '0 10px 40px rgba(0,0,0,0.3)',
+          zIndex: 1000,
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+            <h3 style={{ fontSize: '1rem', fontWeight: 600, margin: 0 }}>Settings</h3>
+            <button 
+              onClick={toggleSettings}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2rem', color: theme === 'dark' ? '#fff' : '#000' }}
+            >
+              ×
+            </button>
+          </div>
+          <div style={{ marginBottom: '1rem' }}>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', fontWeight: 500 }}>Theme</label>
+            <button 
+              onClick={toggleTheme}
+              style={{
+                width: '100%',
+                padding: '0.75rem',
+                background: theme === 'dark' ? '#0F62FE' : '#f5f5f5',
+                border: 'none',
+                borderRadius: 8,
+                color: theme === 'dark' ? '#fff' : '#000',
+                cursor: 'pointer',
+                fontSize: '0.9rem',
+                fontWeight: 500,
+              }}
+            >
+              {theme === 'dark' ? '🌙 Dark Mode' : '☀️ Light Mode'}
+            </button>
+          </div>
+          <div style={{ fontSize: '0.8rem', color: theme === 'dark' ? '#94a3b8' : '#64748b' }}>
+            HirePilot AI v2.0
+          </div>
+        </div>
+      )}
 
       <style jsx>{`
         .logo-image {
@@ -224,19 +259,10 @@ export default function Layout({ children }) {
   );
 }
 
-// ── Premium Floating IBM watsonx Chat Panel ──────────────────
+// ── Premium Floating AI Chat Panel ──────────────────
 function ChatBubble() {
   const [open, setOpen] = useState(false);
   const [loaded, setLoaded] = useState(false);
-
-  const cfg = {
-    orchestrationID:    '8254d45b2e8c49f397fed4f4efda4474_82de1835-3f80-482d-864e-7b0c75121f2f',
-    hostURL:            'https://au-syd.watson-orchestrate.cloud.ibm.com',
-    deploymentPlatform: 'ibmcloud',
-    crn:                'crn:v1:bluemix:public:watsonx-orchestrate:au-syd:a/8254d45b2e8c49f397fed4f4efda4474:82de1835-3f80-482d-864e-7b0c75121f2f::',
-    agentId:            '066f1a0a-dec9-4dc8-8462-23b617d50639',
-    agentEnvironmentId: '6b0c667f-8cb8-43d0-bc81-098baaf81a36',
-  };
 
   const iframeDoc = `<!DOCTYPE html><html><head><meta charset="UTF-8">
 <style>
@@ -256,21 +282,12 @@ function ChatBubble() {
   <div id="ld">
     <div class="brand"><img src="/logo.png" alt="HirePilot AI" style="width: 24px; height: 24px; border-radius: 4px;" /> HirePilot AI</div>
     <div class="sp"></div>
-    <span>Connecting to watsonx…</span>
+    <span>Connecting to AI Assistant…</span>
   </div>
 </div>
 <script>
-  window.wxOConfiguration={
-    orchestrationID:"${cfg.orchestrationID}",
-    hostURL:"${cfg.hostURL}",rootElementID:"root",
-    deploymentPlatform:"${cfg.deploymentPlatform}",crn:"${cfg.crn}",
-    chatOptions:{agentId:"${cfg.agentId}",agentEnvironmentId:"${cfg.agentEnvironmentId}"}
-  };
-  var s=document.createElement('script');
-  s.src="${cfg.hostURL}/wxochat/wxoLoader.js?embed=true";
-  s.onload=function(){wxoLoader.init();var l=document.getElementById('ld');if(l)l.remove()};
-  s.onerror=function(){var l=document.getElementById('ld');if(l)l.innerHTML='<span style="color:#f87171">⚠ Could not connect to agent</span>'};
-  document.head.appendChild(s);
+  var l=document.getElementById('ld');
+  if(l)l.innerHTML='<span style="color:#f87171">⚠ AI Assistant not configured</span>';
 </script></body></html>`;
 
   return (
@@ -324,7 +341,7 @@ function ChatBubble() {
               <div>
                 <div style={{ fontSize: '.85rem', fontWeight: 700 }}>HirePilot AI Assistant</div>
                 <div style={{ fontSize: '.65rem', color: 'rgba(255,255,255,0.7)', fontWeight: 400 }}>
-                  IBM watsonx Orchestrate · Online
+                  AI-Powered · Online
                 </div>
               </div>
             </div>

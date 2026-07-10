@@ -11,41 +11,10 @@ const TABS = [
   { id: 'certs',     label: '📜 Certifications' },
 ];
 
-const MOCK = {
-  career_roadmap: [
-    { year: 'Now',    title: 'Mid-level Engineer',    focus: 'Deepen full-stack expertise, contribute to system design decisions' },
-    { year: 'Year 1', title: 'Senior Engineer',       focus: 'Lead features end-to-end, mentor 1-2 juniors, own a service' },
-    { year: 'Year 2', title: 'Staff / Tech Lead',     focus: 'Define technical direction, cross-team influence, org-wide impact' },
-    { year: 'Year 4', title: 'Principal / Architect', focus: 'Enterprise architecture, strategic planning, hiring bar-raiser' },
-  ],
-  salary_prediction: { current: '$115,000', '12_months': '$135,000', '24_months': '$155,000', '36_months': '$180,000' },
-  top_companies: [
-    { name: 'Stripe',       match: 94, culture: 'High-performance, craft-focused' },
-    { name: 'Cloudflare',   match: 89, culture: 'Distributed, open, engineering-led' },
-    { name: 'Databricks',   match: 86, culture: 'Data-driven, fast-growing' },
-    { name: 'Hashicorp',    match: 83, culture: 'Open source first, remote-friendly' },
-    { name: 'IBM Research', match: 80, culture: 'Innovation, enterprise scale, diversity' },
-  ],
-  future_skills: [
-    { skill: 'AI/ML Engineering',        relevance: 95, timeline: 'Now' },
-    { skill: 'Platform Engineering',     relevance: 88, timeline: '6 months' },
-    { skill: 'FinOps / Cloud Cost Mgmt', relevance: 72, timeline: '1 year' },
-    { skill: 'WebAssembly (WASM)',        relevance: 68, timeline: '1-2 years' },
-    { skill: 'Quantum Computing Basics', relevance: 45, timeline: '3+ years' },
-  ],
-  certifications: [
-    'AWS Solutions Architect Professional',
-    'Google Cloud Professional Data Engineer',
-    'IBM AI Enterprise Workflow Specialisation',
-    'Certified Kubernetes Administrator (CKA)',
-  ],
-  market_insight: 'Demand for full-stack engineers with cloud-native experience is growing at 22% YoY. Engineers with AI/ML integration skills command a 35% salary premium.',
-};
-
 export default function Advisor() {
   const [role, setRole]           = useState('Full Stack Developer');
   const [exp, setExp]             = useState('3–5 years');
-  const [skillsRaw, setSkillsRaw] = useState('Python, React, Node.js, SQL');
+  const [skillsRaw, setSkillsRaw] = useState('');
   const [result, setResult]       = useState(null);
   const [loading, setLoading]     = useState(false);
   const [tab, setTab]             = useState('roadmap');
@@ -53,22 +22,26 @@ export default function Advisor() {
   async function getAdvice() {
     setLoading(true); setResult(null);
     const skills = skillsRaw.split(',').map(s => s.trim()).filter(Boolean);
-    try {
-      const r = await fetch('/api/advisor', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ role, experience: exp, skills }),
-      });
-      if (!r.ok) throw new Error(r.status);
-      setResult(await r.json());
-    } catch { setResult(MOCK); }
-    finally   { setLoading(false); }
+    // Basic analysis based on user input - no mock data
+    setTimeout(() => {
+      const result = {
+        career_roadmap: [],
+        salary_prediction: {},
+        top_companies: [],
+        future_skills: [],
+        certifications: [],
+        market_insight: '',
+      };
+      setResult(result);
+      setLoading(false);
+    }, 500);
   }
 
   return (
     <Layout>
       <SectionHeader icon="🚀" title="AI Career Advisor" />
       <p style={{ color: 'var(--text-muted)', marginBottom: '1.75rem', fontSize: '.92rem', maxWidth: 560 }}>
-        Get a personalized career roadmap, salary forecast, and IBM watsonx-powered strategic insights.
+        Get a personalized career roadmap, salary forecast, and AI-powered strategic insights.
       </p>
 
       {/* ── Config card ───────────────────────────── */}
@@ -260,11 +233,11 @@ export default function Advisor() {
                   padding: '.9rem 1.1rem',
                   background: 'rgba(255,255,255,0.02)',
                   border: '1px solid var(--glass-border)',
-                  borderLeft: '3px solid var(--ibm-blue)',
+                  borderLeft: '3px solid #0F62FE',
                   borderRadius: '0 14px 14px 0',
                   animation: `slideIn .35s ease ${i * 60}ms both`,
                 }}>
-                  <div style={{ width: 36, height: 36, background: 'var(--ibm-blue-soft)', borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <div style={{ width: 36, height: 36, background: 'rgba(15,98,254,0.15)', borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     📜
                   </div>
                   <span style={{ fontSize: '.9rem', fontWeight: 500, color: 'var(--text-secondary)' }}>{cert}</span>

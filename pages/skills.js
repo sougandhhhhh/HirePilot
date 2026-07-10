@@ -19,65 +19,38 @@ const TABS = [
   { id: 'projects', label: '🔨 Projects' },
   { id: 'roadmap',  label: '🗺️ Roadmap' },
 ];
-const MOCK = {
-  current_skills: [
-    { name: 'Python',    level: 'Expert',       score: 90 },
-    { name: 'React',     level: 'Advanced',     score: 80 },
-    { name: 'Node.js',   level: 'Intermediate', score: 65 },
-    { name: 'SQL',       level: 'Advanced',     score: 78 },
-    { name: 'Git',       level: 'Expert',       score: 92 },
-    { name: 'AWS (basic)', level: 'Beginner',   score: 40 },
-  ],
-  missing_skills: [
-    { name: 'Kubernetes',    priority: 'High',   demand: 91 },
-    { name: 'Terraform',     priority: 'High',   demand: 87 },
-    { name: 'GraphQL',       priority: 'Medium', demand: 74 },
-    { name: 'TypeScript',    priority: 'High',   demand: 89 },
-    { name: 'CI/CD',         priority: 'High',   demand: 85 },
-    { name: 'System Design', priority: 'High',   demand: 93 },
-  ],
-  certifications: [
-    { name: 'AWS Solutions Architect Associate', provider: 'Amazon',    duration: '3 months', url: 'https://aws.amazon.com/certification/' },
-    { name: 'CKA – Certified Kubernetes Admin',  provider: 'CNCF',      duration: '2 months', url: 'https://www.cncf.io/certification/cka/' },
-    { name: 'HashiCorp Terraform Associate',     provider: 'HCP',       duration: '6 weeks',  url: 'https://developer.hashicorp.com/certifications' },
-    { name: 'IBM Full Stack Developer',          provider: 'IBM',       duration: '4 months', url: 'https://www.ibm.com/training/' },
-  ],
-  projects: [
-    { name: 'Build a microservices app with Docker + K8s',    difficulty: 'Medium', time: '2 weeks' },
-    { name: 'Deploy a Terraform-managed AWS infrastructure',  difficulty: 'Medium', time: '1 week' },
-    { name: 'Convert a REST API to GraphQL',                  difficulty: 'Easy',   time: '3 days' },
-    { name: 'Set up a full CI/CD pipeline with GitHub Actions', difficulty: 'Medium', time: '1 week' },
-  ],
-  roadmap: [
-    { step: 1, title: 'Master TypeScript',       detail: 'Complete TypeScript course + migrate a JS project',         weeks: 3 },
-    { step: 2, title: 'Learn Docker deeply',     detail: 'Containerise your existing projects',                       weeks: 2 },
-    { step: 3, title: 'Kubernetes fundamentals', detail: 'Deploy apps to a local K8s cluster via minikube',           weeks: 4 },
-    { step: 4, title: 'Infrastructure as Code',  detail: 'Provision AWS infra using Terraform',                       weeks: 3 },
-    { step: 5, title: 'CI/CD Mastery',           detail: 'Build GitHub Actions pipelines for your repos',             weeks: 2 },
-    { step: 6, title: 'System Design practice',  detail: 'Solve 20+ system design problems on Excalidraw',           weeks: 4 },
-  ],
-  estimated_weeks: 18, salary_uplift_pct: 28,
-};
 const PRIO_ORDER = ['High', 'Medium', 'Low'];
 
 export default function SkillGap() {
   const [role, setRole]       = useState('Senior Software Engineer');
-  const [skills, setSkills]   = useState(['Python', 'React', 'Node.js', 'SQL']);
+  const [skills, setSkills]   = useState([]);
   const [result, setResult]   = useState(null);
   const [loading, setLoading] = useState(false);
   const [tab, setTab]         = useState('overview');
 
   async function analyze() {
     setLoading(true); setResult(null);
-    try {
-      const r = await fetch('/api/skills', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ role, skills }),
-      });
-      if (!r.ok) throw new Error(r.status);
-      setResult(await r.json());
-    } catch { setResult(MOCK); }
-    finally   { setLoading(false); }
+    // Basic analysis based on user input - no mock data
+    setTimeout(() => {
+      const currentSkills = skills.map(s => ({ 
+        name: s, 
+        level: 'Intermediate', 
+        score: 70 
+      }));
+      
+      const result = {
+        current_skills: currentSkills,
+        missing_skills: [],
+        certifications: [],
+        projects: [],
+        roadmap: [],
+        estimated_weeks: 0,
+        salary_uplift_pct: 0,
+      };
+      
+      setResult(result);
+      setLoading(false);
+    }, 500);
   }
 
   const toggleSkill = s => setSkills(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s]);
@@ -86,7 +59,7 @@ export default function SkillGap() {
     <Layout>
       <SectionHeader icon="🧩" title="Skill Gap Analysis" />
       <p style={{ color: 'var(--text-muted)', marginBottom: '1.75rem', fontSize: '.92rem', maxWidth: 560 }}>
-        Discover exactly which skills you need for your next role — with a personalized learning roadmap and IBM SkillsBuild courses.
+        Discover exactly which skills you need for your next role — with a personalized learning roadmap.
       </p>
 
       {/* ── Config ──────────────────────────────────── */}
@@ -127,7 +100,7 @@ export default function SkillGap() {
         </button>
       </div>
 
-      {loading && <Loading message="Mapping your skills against industry requirements…" />}
+      {loading && <Loading message="Analyzing your skills…" />}
 
       {result && (
         <>

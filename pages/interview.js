@@ -16,28 +16,6 @@ const CATEGORIES    = [
   { id: 'coding',     label: 'Coding',     icon: '👨‍💻' },
 ];
 
-function buildMock(role) {
-  return {
-    technical: [
-      { question: `Explain synchronous vs asynchronous programming as a ${role}.`, answer: 'Synchronous blocks the thread until done. Async (callbacks/promises/async-await) lets other work continue while waiting — critical for I/O-bound operations.', difficulty: 'medium', category: 'Core Concepts' },
-      { question: 'How would you design a URL shortener like bit.ly from scratch?', answer: 'Hash function (base62 counter), Redis cache, PostgreSQL storage, load balancer, analytics pipeline. Handle collisions by retrying with salt.', difficulty: 'hard', category: 'System Design' },
-      { question: 'What is the time complexity of quicksort vs mergesort?', answer: 'Quicksort O(n log n) avg, O(n²) worst. Prefer mergesort for guaranteed O(n log n), linked lists, or stable sort.', difficulty: 'medium', category: 'Algorithms' },
-    ],
-    hr: [
-      { question: "Tell me about yourself and why you're interested in this role.", answer: 'Structure: Past → Present → Future. Keep it 2 minutes. Be specific about achievements.', difficulty: 'easy', category: 'Introduction' },
-      { question: 'Describe a time you disagreed with your manager.', answer: 'Use STAR. Raise concern respectfully with data. Show maturity and professionalism. Positive outcome.', difficulty: 'medium', category: 'Conflict Resolution' },
-    ],
-    behavioral: [
-      { question: 'Tell me about a time you delivered a project under an extremely tight deadline.', answer: 'STAR: constraint → prioritise ruthlessly → communicate risks early → execute → reflect. Quantify the outcome.', difficulty: 'medium', category: 'Delivery Under Pressure' },
-      { question: "Give an example of when you took ownership of a problem that wasn't yours.", answer: 'Demonstrate initiative and cross-functional collaboration. Identified a gap, drove it to resolution, linked to business impact.', difficulty: 'medium', category: 'Ownership' },
-    ],
-    coding: [
-      { question: 'Find the longest substring without repeating characters.', answer: 'Sliding window with hash set. O(n) time, O(min(m,n)) space.', difficulty: 'medium', category: 'Strings / Sliding Window' },
-      { question: 'Detect if a binary tree is balanced.', answer: 'DFS post-order. Return -1 if unbalanced, else height. Check |left-right| > 1. O(n) time.', difficulty: 'hard', category: 'Trees / Recursion' },
-    ],
-  };
-}
-
 export default function InterviewCoach() {
   const [role, setRole]               = useState('Software Engineer');
   const [diff, setDiff]               = useState('All Levels');
@@ -50,15 +28,16 @@ export default function InterviewCoach() {
 
   async function generate() {
     setLoading(true); setResult(null);
-    try {
-      const r = await fetch('/api/interview', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ role, difficulty: diff.toLowerCase().replace('all levels', 'all') }),
+    // No mock data - user needs to provide input
+    setTimeout(() => {
+      setResult({
+        technical: [],
+        hr: [],
+        behavioral: [],
+        coding: [],
       });
-      if (!r.ok) throw new Error(r.status);
-      setResult(await r.json());
-    } catch { setResult(buildMock(role)); }
-    finally   { setLoading(false); }
+      setLoading(false);
+    }, 500);
   }
 
   function evaluate() {
@@ -108,7 +87,7 @@ export default function InterviewCoach() {
         </div>
       </div>
 
-      {loading && <Loading message="IBM watsonx AI is crafting your interview questions…" />}
+      {loading && <Loading message="AI is crafting your interview questions…" />}
       {!result && !loading && (
         <InfoBox>ℹ️ Select your target role and difficulty, then click Generate Questions to start practising.</InfoBox>
       )}

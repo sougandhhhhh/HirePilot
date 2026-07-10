@@ -26,19 +26,6 @@ const COMPANY_LOGOS = {
   Stripe: '💳', Cloudflare: '🌐', Databricks: '🔥', Figma: '🎨', Notion: '📝',
 };
 
-function buildMockJobs(role, loc) {
-  return {
-    total_found: 47,
-    jobs: [
-      { title:`Senior ${role}`, company:'Stripe',     location:loc,          salary:'$145,000–$185,000', match_pct:94, posted:'2 days ago',  skills:['Python','React','PostgreSQL','AWS'],            url:'https://stripe.com/jobs',               description:'Lead development of payment infrastructure serving millions of users.', remote: true },
-      { title:role,              company:'Cloudflare', location:'Remote',      salary:'$130,000–$165,000', match_pct:89, posted:'1 day ago',   skills:['Go','Rust','Kubernetes','Distributed Systems'], url:'https://cloudflare.com/careers',         description:'Build and scale edge computing solutions at a global scale.', remote: true },
-      { title:`${role} II`,      company:'Databricks', location:loc,          salary:'$140,000–$175,000', match_pct:86, posted:'3 days ago',  skills:['Python','Spark','Scala','Delta Lake'],           url:'https://databricks.com/company/careers', description:'Work on data lakehouse products used by Fortune 500 companies.', remote: false },
-      { title:`Staff ${role}`,   company:'Figma',      location:'New York, NY',salary:'$155,000–$200,000', match_pct:81, posted:'5 days ago',  skills:['TypeScript','WebGL','React','Performance'],      url:'https://figma.com/careers',              description:"Improve Figma's collaborative design editor performance.", remote: false },
-      { title:`Principal ${role}`,company:'Notion',   location:'Remote',      salary:'$160,000–$210,000', match_pct:77, posted:'1 week ago',  skills:['React','Node.js','CRDTs','System Design'],       url:'https://notion.so/careers',              description:'Architect next-generation collaborative document infrastructure.', remote: true },
-    ],
-  };
-}
-
 // Match percentage ring
 function MatchRing({ pct }) {
   const r = 22;
@@ -82,19 +69,11 @@ export default function JobMatcher() {
 
   async function search() {
     setLoading(true); setResult(null);
-    try {
-      const r = await fetch('/api/jobs', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ role, location: loc, experience: exp, skills }),
-      });
-      if (!r.ok) throw new Error(r.status);
-      setResult(await r.json());
-    } catch {
-      setResult(buildMockJobs(role, loc));
-    } finally {
+    // No mock data - user needs to provide input
+    setTimeout(() => {
+      setResult({ total_found: 0, jobs: [] });
       setLoading(false);
-    }
+    }, 500);
   }
 
   const toggleSkill = s => setSkills(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s]);
@@ -104,7 +83,7 @@ export default function JobMatcher() {
     <Layout>
       <SectionHeader icon="🔍" title="Job Matcher" />
       <p style={{ color: 'var(--text-muted)', marginBottom: '1.75rem', fontSize: '.92rem', maxWidth: 560 }}>
-        Describe your ideal role and let IBM watsonx AI surface the highest-match opportunities with salary insights.
+        Describe your ideal role and let AI surface the highest-match opportunities with salary insights.
       </p>
 
       {/* ── Filter Card ──────────────────────────────── */}
@@ -163,7 +142,7 @@ export default function JobMatcher() {
         </button>
       </div>
 
-      {loading && <Loading message="IBM watsonx is scanning thousands of job listings…" />}
+      {loading && <Loading message="AI is scanning job listings…" />}
 
       {result && (
         <>
