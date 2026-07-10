@@ -1,34 +1,26 @@
 """HirePilot AI – /api/cover-letter  POST"""
 import json, time
-from http.server import BaseHTTPRequestHandler
 
-_CORS = {
+CORS = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type",
     "Content-Type": "application/json",
 }
 
-def _send(h, data, status=200):
-    body = json.dumps(data).encode()
-    h.send_response(status)
-    for k, v in _CORS.items(): h.send_header(k, v)
-    h.send_header("Content-Length", str(len(body)))
-    h.end_headers()
-    h.wfile.write(body)
 
-def _body(h):
-    n = int(h.headers.get("Content-Length", 0))
-    try: return json.loads(h.rfile.read(n)) if n else {}
-    except: return {}
-
-class handler(BaseHTTPRequestHandler):
-    def do_POST(self):
-        b       = _body(self)
-        company = b.get("company", "Acme Corp")
-        role    = b.get("role", "Software Engineer")
-        today   = time.strftime("%B %d, %Y")
-        letter  = f"""{today}
+def handler(event, context):
+    if event.get("httpMethod") == "OPTIONS":
+        return {"statusCode": 200, "headers": CORS, "body": "{}"}
+    body = {}
+    try:
+        body = json.loads(event.get("body", "{}"))
+    except Exception:
+        pass
+    company = body.get("company", "Acme Corp")
+    role = body.get("role", "Software Engineer")
+    today = time.strftime("%B %d, %Y")
+    letter = f"""{today}
 
 Hiring Manager
 {company}
@@ -47,6 +39,8 @@ Warm regards,
 
 Alex Johnson
 alex.johnson@email.com | linkedin.com/in/alexjohnson | github.com/alexjohnson""".strip()
-        _send(self, {"cover_letter": letter, "word_count": len(letter.split()), "tone": "Professional"})
-    def do_OPTIONS(self): _send(self, {})
-    def log_message(self, *a): pass
+    return {
+        "statusCode": 200,
+        "headers": CORS,
+        "body": json.dumps({"cover_letter": letter, "word_count": len(letter.split()), "tone": "Professional"}),
+    }

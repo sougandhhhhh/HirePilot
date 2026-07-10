@@ -1,53 +1,44 @@
 """HirePilot AI – /api/advisor  POST"""
 import json
-from http.server import BaseHTTPRequestHandler
 
-_CORS = {
+CORS = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type",
     "Content-Type": "application/json",
 }
 
-def _send(h, data, status=200):
-    body = json.dumps(data).encode()
-    h.send_response(status)
-    for k, v in _CORS.items(): h.send_header(k, v)
-    h.send_header("Content-Length", str(len(body)))
-    h.end_headers()
-    h.wfile.write(body)
 
-def _body(h):
-    n = int(h.headers.get("Content-Length", 0))
-    try: return json.loads(h.rfile.read(n)) if n else {}
-    except: return {}
-
-class handler(BaseHTTPRequestHandler):
-    def do_POST(self):
-        _send(self, {
+def handler(event, context):
+    if event.get("httpMethod") == "OPTIONS":
+        return {"statusCode": 200, "headers": CORS, "body": "{}"}
+    return {
+        "statusCode": 200,
+        "headers": CORS,
+        "body": json.dumps({
             "career_roadmap": [
-                {"year": "Now",    "title": "Mid-level Engineer",   "focus": "Deepen full-stack expertise, contribute to system design decisions"},
-                {"year": "Year 1", "title": "Senior Engineer",      "focus": "Lead features end-to-end, mentor 1-2 juniors, own a service"},
-                {"year": "Year 2", "title": "Staff / Tech Lead",    "focus": "Define technical direction, cross-team influence, org-wide impact"},
-                {"year": "Year 4", "title": "Principal / Architect","focus": "Enterprise architecture, strategic planning, hiring bar-raiser"},
+                {"year": "Now", "title": "Mid-level Engineer", "focus": "Deepen full-stack expertise, contribute to system design decisions"},
+                {"year": "Year 1", "title": "Senior Engineer", "focus": "Lead features end-to-end, mentor 1-2 juniors, own a service"},
+                {"year": "Year 2", "title": "Staff / Tech Lead", "focus": "Define technical direction, cross-team influence, org-wide impact"},
+                {"year": "Year 4", "title": "Principal / Architect", "focus": "Enterprise architecture, strategic planning, hiring bar-raiser"},
             ],
             "salary_prediction": {
                 "current": "$115,000", "12_months": "$135,000",
                 "24_months": "$155,000", "36_months": "$180,000",
             },
             "top_companies": [
-                {"name": "Stripe",       "match": 94, "culture": "High-performance, craft-focused"},
-                {"name": "Cloudflare",   "match": 89, "culture": "Distributed, open, engineering-led"},
-                {"name": "Databricks",   "match": 86, "culture": "Data-driven, fast-growing"},
-                {"name": "Hashicorp",    "match": 83, "culture": "Open source first, remote-friendly"},
+                {"name": "Stripe", "match": 94, "culture": "High-performance, craft-focused"},
+                {"name": "Cloudflare", "match": 89, "culture": "Distributed, open, engineering-led"},
+                {"name": "Databricks", "match": 86, "culture": "Data-driven, fast-growing"},
+                {"name": "Hashicorp", "match": 83, "culture": "Open source first, remote-friendly"},
                 {"name": "IBM Research", "match": 80, "culture": "Innovation, enterprise scale, diversity"},
             ],
             "future_skills": [
-                {"skill": "AI/ML Engineering",        "relevance": 95, "timeline": "Now"},
-                {"skill": "Platform Engineering",     "relevance": 88, "timeline": "6 months"},
+                {"skill": "AI/ML Engineering", "relevance": 95, "timeline": "Now"},
+                {"skill": "Platform Engineering", "relevance": 88, "timeline": "6 months"},
                 {"skill": "FinOps / Cloud Cost Mgmt", "relevance": 72, "timeline": "1 year"},
-                {"skill": "WebAssembly (WASM)",        "relevance": 68, "timeline": "1-2 years"},
-                {"skill": "Quantum Computing Basics",  "relevance": 45, "timeline": "3+ years"},
+                {"skill": "WebAssembly (WASM)", "relevance": 68, "timeline": "1-2 years"},
+                {"skill": "Quantum Computing Basics", "relevance": 45, "timeline": "3+ years"},
             ],
             "certifications": [
                 "AWS Solutions Architect Professional",
@@ -56,6 +47,5 @@ class handler(BaseHTTPRequestHandler):
                 "Certified Kubernetes Administrator (CKA)",
             ],
             "market_insight": "Demand for full-stack engineers with cloud-native experience is growing at 22% YoY. Engineers with AI/ML integration skills command a 35% salary premium.",
-        })
-    def do_OPTIONS(self): _send(self, {})
-    def log_message(self, *a): pass
+        }),
+    }
