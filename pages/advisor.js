@@ -118,7 +118,7 @@ Skills: ${skills.join(', ') || 'Not specified'}`;
         </button>
       </div>
 
-      {loading && <Loading message="IBM watsonx AI is analysing your career trajectory…" />}
+      {loading && <Loading message="HirePilot AI is analysing your career trajectory…" />}
       {!result && !loading && (
         <InfoBox>ℹ️ Fill in your profile above and click Get Career Advice to receive a personalised career strategy.</InfoBox>
       )}

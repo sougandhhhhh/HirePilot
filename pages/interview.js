@@ -27,22 +27,83 @@ export default function InterviewCoach() {
 
   async function generate() {
     setLoading(true); setResult(null);
-    // No mock data - user needs to provide input
-    setTimeout(() => {
-      setResult({
-        technical: [],
-        hr: [],
-        behavioral: [],
-        coding: [],
+    const prompt = `You are an interview coach. Generate interview questions for a ${role} (difficulty: ${diff}). Return ONLY valid JSON (no markdown, no explanation) with this exact structure:
+{
+  "technical": [{"question": "string", "answer": "string", "category": "Technical", "difficulty": "easy|medium|hard"}],
+  "hr": [{"question": "string", "answer": "string", "category": "HR", "difficulty": "easy|medium|hard"}],
+  "behavioral": [{"question": "string", "answer": "string", "category": "Behavioral", "difficulty": "easy|medium|hard"}],
+  "coding": [{"question": "string", "answer": "string", "category": "Coding", "difficulty": "easy|medium|hard"}]
+}
+Generate 2 questions per category with realistic, specific questions and detailed model answers.`;
+
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: [{ role: 'user', content: prompt }] }),
       });
+      if (!res.ok) throw new Error('API request failed');
+      const data = await res.json();
+      let parsed;
+      try {
+        parsed = JSON.parse(data.response);
+      } catch {
+        const jsonMatch = data.response.match(/\{[\s\S]*\}/);
+        parsed = jsonMatch ? JSON.parse(jsonMatch[0]) : null;
+      }
+      if (parsed) {
+        setResult({
+          technical: Array.isArray(parsed.technical) ? parsed.technical : [],
+          hr: Array.isArray(parsed.hr) ? parsed.hr : [],
+          behavioral: Array.isArray(parsed.behavioral) ? parsed.behavioral : [],
+          coding: Array.isArray(parsed.coding) ? parsed.coding : [],
+        });
+        return;
+      }
+      throw new Error('Failed to parse AI response');
+    } catch (err) {
+      console.error('Interview error:', err);
+      setResult({
+        technical: [{ question: 'Error generating questions. Please try again.', answer: '', category: 'Technical', difficulty: 'easy' }],
+        hr: [], behavioral: [], coding: [],
+      });
+    } finally {
       setLoading(false);
-    }, 500);
+    }
   }
 
-  function evaluate() {
+  async function evaluate() {
     if (!selfA.trim()) return;
-    const words = selfA.split(/\s+/).length;
-    setEvalScore({ score: Math.min(100, Math.max(40, 60 + Math.floor(words / 5))), words });
+    setEvalScore(null);
+    const prompt = `Evaluate this interview answer. Rate it out of 100. Return ONLY valid JSON (no markdown): {"score": number, "feedback": "string", "improvements": "string"}
+
+Answer: "${selfA.trim()}"`;
+
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: [{ role: 'user', content: prompt }] }),
+      });
+      if (!res.ok) throw new Error('API request failed');
+      const data = await res.json();
+      let parsed;
+      try {
+        parsed = JSON.parse(data.response);
+      } catch {
+        const jsonMatch = data.response.match(/\{[\s\S]*\}/);
+        parsed = jsonMatch ? JSON.parse(jsonMatch[0]) : null;
+      }
+      const words = selfA.split(/\s+/).length;
+      if (parsed) {
+        setEvalScore({ score: parsed.score, feedback: parsed.feedback, improvements: parsed.improvements, words });
+      } else {
+        throw new Error('Parse failed');
+      }
+    } catch {
+      const words = selfA.split(/\s+/).length;
+      setEvalScore({ score: Math.min(100, Math.max(40, 60 + Math.floor(words / 5))), words, feedback: '', improvements: '' });
+    }
   }
 
   const filterQ = qs => diff === 'All Levels' ? qs : qs.filter(q => q.difficulty === diff.toLowerCase());
@@ -86,7 +147,7 @@ export default function InterviewCoach() {
         </div>
       </div>
 
-      {loading && <Loading message="AI is crafting your interview questions…" />}
+      {loading && <Loading message="HirePilot AI is crafting your interview questions…" />}
       {!result && !loading && (
         <InfoBox>ℹ️ Select your target role and difficulty, then click Generate Questions to start practising.</InfoBox>
       )}
@@ -196,17 +257,16 @@ export default function InterviewCoach() {
                 }}>{evalScore.score}</span>
                 <span style={{ fontSize: '.82rem', color: 'var(--text-muted)' }}>/ 100 · {evalScore.words} words</span>
               </div>
-              <div style={{
-                padding: '.75rem 1rem',
-                background: evalScore.words >= 50 ? 'rgba(52,211,153,0.08)' : 'rgba(251,191,36,0.08)',
-                border: `1px solid ${evalScore.words >= 50 ? 'rgba(52,211,153,0.2)' : 'rgba(251,191,36,0.2)'}`,
-                borderRadius: 10, fontSize: '.875rem',
-                color: evalScore.words >= 50 ? 'var(--green)' : 'var(--yellow)',
-              }}>
-                {evalScore.words >= 50
-                  ? '✅ Good length. Try to add specific quantified examples.'
-                  : '⚠️ Your answer is quite short. Expand with STAR framework details.'}
-              </div>
+              {evalScore.feedback && (
+                <div style={{ padding: '.75rem 1rem', background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.2)', borderRadius: 10, fontSize: '.875rem', color: 'var(--text-secondary)', marginBottom: '.5rem' }}>
+                  <strong style={{ color: 'var(--green)' }}>✅ Feedback:</strong> {evalScore.feedback}
+                </div>
+              )}
+              {evalScore.improvements && (
+                <div style={{ padding: '.75rem 1rem', background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.2)', borderRadius: 10, fontSize: '.875rem', color: 'var(--text-secondary)' }}>
+                  <strong style={{ color: 'var(--yellow)' }}>💡 Improvements:</strong> {evalScore.improvements}
+                </div>
+              )}
             </div>
           )}
         </>
