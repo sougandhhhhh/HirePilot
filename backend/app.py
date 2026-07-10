@@ -407,7 +407,7 @@ def get_model():
     api_key = os.getenv('WATSONX_API_KEY')
     project_id = os.getenv('WATSONX_PROJECT_ID')
     url = os.getenv('WATSONX_URL', 'https://us-south.ml.cloud.ibm.com')
-    model_id = os.getenv('WATSONX_MODEL_ID', 'ibm/granite-13b-chat-v2')
+    model_id = os.getenv('WATSONX_MODEL_ID', 'meta-llama/llama-3-3-70b-instruct')
 
     missing = []
     if not api_key: missing.append('WATSONX_API_KEY')
