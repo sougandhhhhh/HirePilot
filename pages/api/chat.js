@@ -1,5 +1,143 @@
 // HirePilot AI — watsonx.ai API route (server-side)
+
 let tokenCache = { token: null, expiresAt: 0 };
+
+const MAX_CONVERSATION_HISTORY = 10;
+
+const SYSTEM_PROMPT = `You are HirePilot AI — a premium AI career assistant. Respond like ChatGPT or Claude: direct, conversational, and helpful.
+
+## Core Rules
+- Produce exactly ONE response to the latest user message, then stop.
+- Never simulate the user. Never write "User:" or "User says:" after your response.
+- Never continue the conversation, ask yourself questions, or generate the next user turn.
+- Never repeat paragraphs, advice, sentence structures, or section headings across responses.
+
+## Greeting Rules
+If the user says hi, hello, or hey:
+- Reply in under 60 words.
+- Briefly introduce HirePilot AI and mention 2–3 core capabilities.
+- Do not list every feature. Stop naturally.
+
+## Response Length by Category
+- Greetings: 50–60 words
+- Simple questions (yes/no, quick facts, short how-to): 100–250 words
+- Career advice / explanations: 250–500 words
+- Resume analysis: detailed structured report
+- Interview evaluation: detailed structured report
+- Job matching: detailed structured report with match percentage and skill gaps
+- Cover letter: one complete letter
+- Do not generate detailed reports unless the user is on a relevant page or explicitly asks.
+
+## Style
+- Professional, conversational, confident. No hedging ("I think", "perhaps", "might").
+- Write naturally — like a human expert, not a template.
+- No "As an AI", no "I'm here to help", no robotic disclaimers.
+- Short paragraphs. Use bullets only when they add clarity.
+- Do not include sections like "Summary:", "Analysis:", or "Recommendations:" unless the user asks for a report.
+
+## Page Awareness
+- Dashboard (/): General career guidance and navigation help.
+- Resume (/resume): Resume analysis — ATS scoring, keyword gaps, formatting, improvements.
+- Jobs (/jobs): Job matching — match percentage, missing skills, resume tweaks.
+- Skills (/skills): Skill gap analysis — missing skills, learning roadmap, course recommendations.
+- Interview (/interview): Interview coaching — questions, feedback, scoring.
+- Cover Letter (/cover-letter): Cover letter generation — tone selection, personalization.
+- Career Advisor (/advisor): Career planning — roadmap, salary negotiation, strategy.
+- Only discuss features related to the user's current page. Do not mention unrelated modules.
+
+## Safety
+- Never fabricate jobs, recruiters, salaries, or guarantees.
+- Mark estimates clearly.
+- Say "I don't know" when uncertain.`;
+
+function buildPrompt(messages) {
+  let systemContent = SYSTEM_PROMPT;
+  let contextContent = '';
+  const conversationTurns = [];
+
+  for (const msg of messages) {
+    if (msg.role === 'system') {
+      contextContent += msg.content + '\n';
+    } else if (msg.role === 'user') {
+      conversationTurns.push(`User: ${msg.content}`);
+    } else if (msg.role === 'assistant') {
+      conversationTurns.push(`Assistant: ${msg.content}`);
+    }
+  }
+
+  let prompt = `${systemContent.trim()}\n\n`;
+
+  if (contextContent.trim()) {
+    prompt += `${contextContent.trim()}\n\n`;
+  }
+
+  if (conversationTurns.length > 0) {
+    prompt += `${conversationTurns.join('\n')}\n\n`;
+  }
+
+  prompt += 'Assistant:';
+
+  return prompt;
+}
+
+function computeMaxTokens(messages) {
+  const lastMsg = messages[messages.length - 1]?.content?.toLowerCase() || '';
+  const trimmed = lastMsg.trim();
+
+  const greetingPatterns = /^(hi|hello|hey|good\s*(morning|afternoon|evening)|yo|sup|howdy|what's up)\b/i;
+  if (greetingPatterns.test(trimmed)) {
+    return 80;
+  }
+
+  const simplePatterns = /^(what|who|when|where|why|how|can|do|is|are|will|would|could|should|does)\b/i;
+  if (trimmed.length < 80 || simplePatterns.test(trimmed)) {
+    return 250;
+  }
+
+  const reportKeywords = [
+    { pattern: /resume|ats/i, tokens: 800 },
+    { pattern: /job match|match percentage/i, tokens: 700 },
+    { pattern: /interview/i, tokens: 700 },
+    { pattern: /cover letter|coverletter/i, tokens: 600 },
+    { pattern: /skill gap|learning roadmap|courses?|certification/i, tokens: 600 },
+  ];
+
+  for (const { pattern, tokens } of reportKeywords) {
+    if (pattern.test(lastMsg)) {
+      return tokens;
+    }
+  }
+
+  return 400;
+}
+
+function extractResponse(raw) {
+  let text = (raw || '').trim();
+
+  const hallucinationMarkers = ['\nUser:', '\nUser ', '\nSystem:', '\nAssistant:', '\nHuman:'];
+  let earliestIndex = text.length;
+  for (const marker of hallucinationMarkers) {
+    const idx = text.indexOf(marker);
+    if (idx !== -1 && idx < earliestIndex) {
+      earliestIndex = idx;
+    }
+  }
+
+  if (earliestIndex < text.length) {
+    text = text.substring(0, earliestIndex);
+  }
+
+  text = text.replace(/\s*(Assistant|AI)\s*:?\s*$/i, '');
+  text = text.replace(/\n{3,}/g, '\n\n');
+
+  const cleaned = text.trim();
+
+  if (!cleaned) {
+    return 'I\'m sorry, I couldn\'t generate a proper response. Could you rephrase your question?';
+  }
+
+  return cleaned;
+}
 
 async function getIAMToken(apiKey) {
   if (tokenCache.token && Date.now() < tokenCache.expiresAt) {
@@ -20,70 +158,46 @@ async function getIAMToken(apiKey) {
   return data.access_token;
 }
 
-const SYSTEM_PROMPT = `You are HirePilot AI — a premium AI career assistant. Your responses should feel like ChatGPT, Claude, or Gemini.
+async function generateResponse(messages) {
+  const { WATSONX_API_KEY, WATSONX_PROJECT_ID, WATSONX_URL, WATSONX_MODEL_ID } = process.env;
 
-## Response Rules
+  const token = await getIAMToken(WATSONX_API_KEY);
+  const prompt = buildPrompt(messages);
+  const modelId = WATSONX_MODEL_ID || 'meta-llama/llama-3-3-70b-instruct';
+  const baseUrl = WATSONX_URL.replace(/\/$/, '');
+  const maxTokens = computeMaxTokens(messages);
 
-**General:**
-- Answer only what the user asked.
-- Never repeat information, paragraphs, headings, or duplicate responses.
-- Never continue talking after answering. Stop immediately when the answer is complete.
+  const wxRes = await fetch(`${baseUrl}/ml/v1/text/generation?version=2024-03-19`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model_id: modelId,
+      input: prompt,
+      parameters: {
+        max_new_tokens: maxTokens,
+        min_new_tokens: 1,
+        temperature: 0.4,
+        top_p: 0.9,
+        top_k: 40,
+        repetition_penalty: 1.15,
+        stop_sequences: ['\nUser:', '\nUser', '\nSystem:'],
+      },
+      project_id: WATSONX_PROJECT_ID,
+    }),
+  });
 
-**Greetings (Hi/Hello/Hey):** 2-4 sentences. Introduce yourself briefly, mention main capabilities. Stop.
+  const data = await wxRes.json();
 
-**Conversation:**
-- Do not introduce every feature unless the user asks.
-- Only discuss the feature related to the user's question.
-- Adapt your focus automatically based on the page they're on.
-
-**Formatting:**
-- Short paragraphs.
-- Bullets only when useful.
-- Avoid large walls of text.
-- Never generate sections like Summary, Analysis, Confidence, Recommendations unless explicitly asked.
-
-**Length Rules:**
-- Simple questions: 1-4 sentences.
-- Career advice: 5-10 sentences.
-- Resume review: Structured report with clear sections.
-- Interview questions: Question + explanation. Stop.
-- If the answer exceeds 250 words, shorten it.
-- Never produce duplicate content.
-
-**Navigation Awareness:**
-- /resume → Resume analysis mode (ATS, keywords, formatting, improvements)
-- /jobs → Job matching mode (match %, missing skills, resume tweaks)
-- /skills → Skill gap mode (missing skills, learning roadmap, courses)
-- /interview → Interview coach mode (questions, feedback, scoring)
-- /cover-letter → Cover letter mode (tone options, customization)
-- /advisor → Career advisor mode (roadmap, strategy, negotiation)
-- / (dashboard) → General navigation help
-
-**Safety:**
-- Never fabricate jobs, recruiters, salaries, guarantees.
-- Clearly mark estimates as estimates.
-- If you don't know, say so.
-
-**Communication:**
-- Professional yet friendly and conversational.
-- Confident and direct — no hedging.
-- No robotic templates, no "As an AI...", no filler.
-- Write naturally.
-- End every response naturally. Stop or ask for clarification if unsure.`;
-
-function buildPrompt(messages) {
-  let prompt = `System: ${SYSTEM_PROMPT}\n\n`;
-  for (const msg of messages) {
-    if (msg.role === 'user') {
-      prompt += `User: ${msg.content}\n\n`;
-    } else if (msg.role === 'assistant') {
-      prompt += `Assistant: ${msg.content}\n\n`;
-    } else if (msg.role === 'system') {
-      prompt += `System: ${msg.content}\n\n`;
-    }
+  if (!wxRes.ok) {
+    console.error('[chat API] watsonx error:', JSON.stringify(data));
+    throw new Error(data.message || data.error || 'Generation failed');
   }
-  prompt += 'Assistant:';
-  return prompt;
+
+  const raw = data.results?.[0]?.generated_text || '';
+  return extractResponse(raw);
 }
 
 export default async function handler(req, res) {
@@ -91,7 +205,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { WATSONX_API_KEY, WATSONX_PROJECT_ID, WATSONX_URL, WATSONX_MODEL_ID } = process.env;
+  const { WATSONX_API_KEY, WATSONX_PROJECT_ID, WATSONX_URL } = process.env;
 
   const missing = [];
   if (!WATSONX_API_KEY) missing.push('WATSONX_API_KEY');
@@ -107,38 +221,13 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'No messages provided' });
     }
 
-    const token = await getIAMToken(WATSONX_API_KEY);
-    const prompt = buildPrompt(messages);
-    const modelId = WATSONX_MODEL_ID || 'meta-llama/llama-3-3-70b-instruct';
-    const baseUrl = WATSONX_URL.replace(/\/$/, '');
+    const systemMessages = messages.filter(m => m.role === 'system');
+    const nonSystemMessages = messages.filter(m => m.role !== 'system');
+    const recentMessages = nonSystemMessages.slice(-MAX_CONVERSATION_HISTORY);
+    const trimmedMessages = [...systemMessages, ...recentMessages];
 
-    const wxRes = await fetch(`${baseUrl}/ml/v1/text/generation?version=2024-03-19`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model_id: modelId,
-        input: prompt,
-        parameters: {
-          max_new_tokens: 3072,
-          temperature: 0.6,
-          top_p: 0.9,
-        },
-        project_id: WATSONX_PROJECT_ID,
-      }),
-    });
-
-    const data = await wxRes.json();
-
-    if (!wxRes.ok) {
-      console.error('[chat API] watsonx error:', JSON.stringify(data));
-      return res.status(500).json({ error: data.message || data.error || 'Generation failed' });
-    }
-
-    const text = data.results?.[0]?.generated_text || '';
-    return res.status(200).json({ response: text.trim() });
+    const response = await generateResponse(trimmedMessages);
+    return res.status(200).json({ response });
   } catch (err) {
     console.error('[chat API] Error:', err.message);
     return res.status(500).json({ error: err.message });
