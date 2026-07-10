@@ -1,5 +1,5 @@
 // HirePilot AI – Premium Layout (Collapsible floating sidebar + top navbar)
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 
