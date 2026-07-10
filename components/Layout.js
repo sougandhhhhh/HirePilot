@@ -67,10 +67,7 @@ export default function Layout({ children }) {
     collapsed ? 'sidebar-collapsed' : '',
   ].filter(Boolean).join(' ');
 
-  const navbarClass = [
-    'top-navbar',
-    collapsed ? 'sidebar-collapsed' : '',
-  ].filter(Boolean).join(' ');
+  // navbarClass removed - top navbar bar eliminated
 
   if (!mounted) return null;
 
@@ -86,16 +83,6 @@ export default function Layout({ children }) {
             <span>AI-Powered Career Tools</span>
           </div>
         </div>
-
-        {/* Collapse toggle */}
-        <button
-          className="sidebar-toggle"
-          onClick={() => setCollapsed(!collapsed)}
-          aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          title={collapsed ? 'Expand' : 'Collapse'}
-        >
-          {collapsed ? '›' : '‹'}
-        </button>
 
         {/* Nav */}
         <nav className="sidebar-nav" role="navigation">
@@ -120,6 +107,30 @@ export default function Layout({ children }) {
           })}
         </nav>
 
+        {/* Collapse toggle at bottom */}
+        <div style={{
+          marginTop: 'auto',
+          borderTop: '1px solid var(--glass-border)',
+          padding: collapsed ? '.75rem 0' : '.75rem 1rem',
+          display: 'flex',
+          justifyContent: collapsed ? 'center' : 'flex-end',
+        }}>
+          <button
+            className="sidebar-toggle"
+            onClick={() => setCollapsed(!collapsed)}
+            aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            title={collapsed ? 'Expand' : 'Collapse'}
+            style={{
+              position: 'static',
+              width: 28,
+              height: 28,
+              fontSize: '.75rem',
+            }}
+          >
+            {collapsed ? '›' : '‹'}
+          </button>
+        </div>
+
       </aside>
 
       {/* ── Mobile overlay ─────────────────────────── */}
@@ -136,50 +147,54 @@ export default function Layout({ children }) {
         />
       )}
 
-      {/* ── Top Navbar ─────────────────────────────── */}
-      <header className={navbarClass} role="banner">
+      {/* ── Floating top-right actions ──────────────── */}
+      <div style={{
+        position: 'fixed',
+        top: 16,
+        right: 16,
+        display: 'flex',
+        gap: '.4rem',
+        zIndex: 250,
+      }}>
         {/* Mobile hamburger */}
         <button
           className="nav-btn hamburger-btn"
           onClick={() => setMobileOpen(!mobileOpen)}
-          style={{ display: 'none' }}
           aria-label="Toggle menu"
         >
           ☰
         </button>
 
-        <div className="nav-actions">
-          {/* Theme Toggle */}
-          <button 
-            className="nav-btn" 
-            title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'} 
-            aria-label="Toggle theme"
-            onClick={toggleTheme}
-          >
-            {theme === 'dark' ? (
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
-                <path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0 .39-.39.39-1.03 0-1.41l-1.06-1.06zm1.06-10.96c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06zM7.05 18.36c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06z"/>
-              </svg>
-            ) : (
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
-                <path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"/>
-              </svg>
-            )}
-          </button>
-
-          {/* Settings */}
-          <button 
-            className="nav-btn" 
-            title="Settings" 
-            aria-label="Settings"
-            onClick={toggleSettings}
-          >
+        {/* Theme Toggle */}
+        <button 
+          className="nav-btn" 
+          title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'} 
+          aria-label="Toggle theme"
+          onClick={toggleTheme}
+        >
+          {theme === 'dark' ? (
             <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
-              <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
+              <path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37c-.39-.39-1.03-.39-1.41 0-.39.39-.39 1.03 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0 .39-.39.39-1.03 0-1.41l-1.06-1.06zm1.06-10.96c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06zM7.05 18.36c.39-.39.39-1.03 0-1.41-.39-.39-1.03-.39-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06z"/>
             </svg>
-          </button>
-        </div>
-      </header>
+          ) : (
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+              <path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"/>
+            </svg>
+          )}
+        </button>
+
+        {/* Settings */}
+        <button 
+          className="nav-btn" 
+          title="Settings" 
+          aria-label="Settings"
+          onClick={toggleSettings}
+        >
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+            <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
+          </svg>
+        </button>
+      </div>
 
       {/* ── Main content ───────────────────────────── */}
       <main className={mainClass} id="main-content">
@@ -251,6 +266,7 @@ export default function Layout({ children }) {
           border-radius: 6px;
           object-fit: cover;
         }
+        .hamburger-btn { display: none; }
         @media (max-width: 768px) {
           .hamburger-btn { display: flex !important; }
         }

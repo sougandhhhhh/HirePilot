@@ -411,7 +411,7 @@ body::before {
 .main-content {
   margin-left: var(--sidebar-w);
   flex: 1;
-  padding: 88px 2rem 3rem;
+  padding: 24px 2rem 3rem;
   max-width: 100%;
   transition: margin-left var(--dur-slow) var(--ease);
   position: relative;
@@ -943,7 +943,7 @@ textarea.form-control { resize: vertical; min-height: 100px; }
 @media (max-width: 768px) {
   .sidebar { transform: translateX(-100%); }
   .sidebar.open { transform: translateX(0); width: var(--sidebar-w) !important; }
-  .main-content { margin-left: 0 !important; padding: 80px 1rem 2rem; }
+  .main-content { margin-left: 0 !important; padding: 20px 1rem 2rem; }
   .col-2, .col-3, .col-4 { grid-template-columns: 1fr; }
   .metrics-grid { grid-template-columns: repeat(2, 1fr); }
   .bento-span-4, .bento-span-3, .bento-span-6, .bento-span-8, .bento-span-12 { grid-column: span 12; }
